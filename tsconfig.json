@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "module": "none",
+    "target": "es5",
+    "outDir": "public/ts/c"
+  }
+}

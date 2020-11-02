@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 <link href='https://fonts.googleapis.com/css?family=RobotoDraft' rel='stylesheet' type='text/css'>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"><style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
 html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
 .w3-bar-block .w3-bar-item {padding: 16px}
 </style>
@@ -21,7 +22,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
   <a href="javascript:void(0)" class="w3-bar-item w3-button w3-dark-grey w3-button w3-hover-black w3-left-align" onclick="document.getElementById('newSecret').style.display='block'">New Secret <i class="w3-padding fa fa-pencil"></i></a>
   <a id="myBtn" onclick="myFunc('tokens')" href="javascript:void(0)" class="w3-bar-item w3-button"><i class="fa fa-inbox w3-margin-right"></i>Tokens<i class="fa fa-caret-down w3-margin-left"></i></a>
   <div id="tokens" class="w3-hide w3-animate-left">
-    <a href="javascript:void(0)" class="w3-bar-item w3-button w3-border-bottom test w3-hover-light-grey" onclick="openMail('token1');w3_close();" id="firstTab">
+    <a href="javascript:void(0)" class="w3-bar-item w3-button w3-border-bottom test w3-hover-light-grey" onclick="displayToken('token1');w3_close();" id="firstTab">
       <div class="w3-container">
         <i class="w3-margin-right fa fa-id-card-o w3-animate-top"></i><span class="w3-opacity w3-large">Sample Token</span>
         <h6>January 1, 2000</h6>
@@ -120,11 +121,14 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
   <a class="w3-button w3-light-grey" href="#">Edit<i class="w3-margin-left fa fa-mail-reply"></i></a>
   <a class="w3-button w3-light-grey" href="#">Delete<i class="w3-margin-left fa fa-arrow-right"></i></a>
   <hr>
-  <div style="width:100%" contenteditable="true" onblur="colorMe()"><span class="w3-text-red">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</span>.<span class="w3-text-blue">eyJqdGkiOiI3ODZlZmY0OS00OWQ2LTQ4YjQtODM4NC0yYTA5NDYxODJmN2YiLCJ2YWxpZCI6IjEiLCJ1c2VyaWQiOiIxIiwibmFtZSI6ImJpbGFsIiwiZXhwIjoxNTcwNjMwMzMwLCJpc3MiOiJodHRwOi8vbXlzaXRlLmNvbSIsImF1ZCI6Imh0dHA6Ly9teXNpdGUuY29tIn0</span>.<span class="w3-text-green">06vzYfiSpj1X9s0-CL2nE7NH4LloASMikZCNfHIJ8tY</span></div>
+  <div style="width:100%" contenteditable="true" onblur="onTokenChange()"><span class="w3-text-red">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</span>.<span class="w3-text-blue">eyJqdGkiOiI3ODZlZmY0OS00OWQ2LTQ4YjQtODM4NC0yYTA5NDYxODJmN2YiLCJ2YWxpZCI6IjEiLCJ1c2VyaWQiOiIxIiwibmFtZSI6ImJpbGFsIiwiZXhwIjoxNTcwNjMwMzMwLCJpc3MiOiJodHRwOi8vbXlzaXRlLmNvbSIsImF1ZCI6Imh0dHA6Ly9teXNpdGUuY29tIn0</span>.<span class="w3-text-green">06vzYfiSpj1X9s0-CL2nE7NH4LloASMikZCNfHIJ8tY</span></div>
+  <div style="width:100%" contenteditable="false" id="decodedToken">
+  </div>
 </div>
 <!-- Fragment End --> 
 </div>
 
+<script src="s/ts/c/tokens.js"></script>
 <script>
 var openInbox = document.getElementById("myBtn");
 openInbox.click();
@@ -178,14 +182,22 @@ function purgeDisplay() {
 
 colors=["w3-text-red", "w3-text-blue", "w3-text-green", "w3-text-orange", "w3-text-purple", "w3-text-teal", "w3-text-blue-gray", "w3-text-amber", "w3-text-indigo", "w3-text-lime"]
 
-function colorMe(){
-  segments = event.currentTarget.textContent.split(".");
-  coloredstring="";
+function onTokenChange() {
+  const token = event.currentTarget.textContent;
+  const segments = token.split(".");
+  let coloredstring="";
   for (i=0; i<segments.length; i++) {
     coloredstring += "<span class='"+colors[i]+"'>"+segments[i]+"</span>.";
   }
   coloredstring = coloredstring.slice(0, -1);
   event.currentTarget.innerHTML = coloredstring;
+
+  document.getElementById("decodedToken").innerHTML = displayDecodedToken(token);
+}
+
+function displayDecodedToken(token) {
+  const jwt = new JWT(token);
+  return `<span class="w3-text-red">${jwt.header}</span>.<span class="w3-text-blue">${jwt.payload}</span>.<span class="w3-text-green">[Signature]</span>`;
 }
 
 function purgeLocalStorage() {
@@ -193,8 +205,8 @@ function purgeLocalStorage() {
 localStorage.removeItem("decoderidentitytokens");
 }
 
-openMail("token1")
-function openMail(personName) {
+displayToken("token1")
+function displayToken(personName) {
   var i;
   var x = document.getElementsByClassName("token");
   for (i = 0; i < x.length; i++) {
@@ -205,7 +217,6 @@ function openMail(personName) {
     x[i].className = x[i].className.replace(" w3-light-grey", "");
   }
   document.getElementById(personName).style.display = "block";
-  event.currentTarget.className += " w3-light-grey";
 }
 </script>
 
