@@ -17,12 +17,12 @@ Decoding of the token pieces are done in the client web browser wherever possibl
 Users can authenticate using a Microsoft account.  The system will contact KeyVault to retrieve decryption keys based on the logged in user.  These decryption keys will then be automatically available for the user to select.
 ### Extra:
 When logged in, users can push stored local data to the server.  
-Users are very prominently notified that all stored data is kept on their local machine.
-Token expiration timer
-Token generation from Private Key
-Adding of .cer/pfx files
-Support for PFT
-CBOR, concise binary object representation for JWTs, easy to get standard library and parse
-Comparison view
-In List delete?
+Users are very prominently notified that all stored data is kept on their local machine.  
+Token expiration timer  
+Token generation from Private Key  
+Adding of .cer/pfx files  
+Support for PFT  
+CBOR, concise binary object representation for JWTs, easy to get standard library and parse  
+Comparison view  
+In List delete?  
 Function to request access token for AAD app IDs
