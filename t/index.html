@@ -132,7 +132,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
   <a class="w3-button w3-light-grey" href="#">Edit<i class="w3-margin-left fa fa-mail-reply"></i></a>
   <a class="w3-button w3-light-grey" href="#">Delete<i class="w3-margin-left fa fa-arrow-right"></i></a>
   <hr>
-  <div style="width:100%" contenteditable="true" onblur="colorMe()">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3ODZlZmY0OS00OWQ2LTQ4YjQtODM4NC0yYTA5NDYxODJmN2YiLCJ2YWxpZCI6IjEiLCJ1c2VyaWQiOiIxIiwibmFtZSI6ImJpbGFsIiwiZXhwIjoxNTcwNjMwMzMwLCJpc3MiOiJodHRwOi8vbXlzaXRlLmNvbSIsImF1ZCI6Imh0dHA6Ly9teXNpdGUuY29tIn0.06vzYfiSpj1X9s0-CL2nE7NH4LloASMikZCNfHIJ8tY</div>
+  <div style="width:100%" contenteditable="true" onblur="colorMe()"><span class="w3-text-red">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</span>.<span class="w3-text-blue">eyJqdGkiOiI3ODZlZmY0OS00OWQ2LTQ4YjQtODM4NC0yYTA5NDYxODJmN2YiLCJ2YWxpZCI6IjEiLCJ1c2VyaWQiOiIxIiwibmFtZSI6ImJpbGFsIiwiZXhwIjoxNTcwNjMwMzMwLCJpc3MiOiJodHRwOi8vbXlzaXRlLmNvbSIsImF1ZCI6Imh0dHA6Ly9teXNpdGUuY29tIn0</span>.<span class="w3-text-green">06vzYfiSpj1X9s0-CL2nE7NH4LloASMikZCNfHIJ8tY</span></div>
 </div>
 <!-- Fragment End -->
 <div id="token2" class="w3-container token">
@@ -209,9 +209,9 @@ function purgeAll(){
 function purgeDisplay() {
   //tbd
 }
-colors=["w3-text-red", "w3-text-blue", "w3-text-green", "w3-text-orange", "w3-text-purple", "w3-text-teal"]
 
-segments="";
+colors=["w3-text-red", "w3-text-blue", "w3-text-green", "w3-text-orange", "w3-text-purple", "w3-text-teal", "w3-text-blue-gray", "w3-text-amber", "w3-text-indigo", "w3-text-lime"]
+
 function colorMe(){
   segments = event.currentTarget.textContent.split(".");
   coloredstring="";
