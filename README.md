@@ -18,3 +18,8 @@ Users can authenticate using a Microsoft account.  The system will contact KeyVa
 ### Extra:
 When logged in, users can push stored local data to the server.  
 Users are very prominently notified that all stored data is kept on their local machine.
+Token expiration timer
+Token generation from Private Key
+Adding of .cer/pfx files
+Support for PFT
+CBOR, concise binary object representation for JWTs, easy to get standard library and parse
