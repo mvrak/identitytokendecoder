@@ -1,0 +1,20 @@
+{
+  "name": "identity-token-decoder",
+  "version": "1.0.0",
+  "description": "Identity Token Decoder",
+  "main": "index.js",
+  "private": false,
+  "scripts": {
+    "start": "node index.js",
+    "build:package": "cd ../../../lib/msal-common && npm run build && cd ../msal-node && npm run build",
+    "start:build": "npm run build:package && npm start"
+  },
+  "author": "mvrak",
+  "license": "MIT",
+  "dependencies": {
+    "@azure/msal-node": "^1.0.0-alpha.9",
+    "express": "^4.17.1",
+    "mustache": "^4.0.1",
+    "uuid": "^8.3.1"
+  }
+}
