@@ -1,5 +1,4 @@
 class Token {
-
   public raw: string;
   
   constructor(token: string) {
