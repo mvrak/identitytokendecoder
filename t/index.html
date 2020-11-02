@@ -195,14 +195,20 @@ function onTokenChange() {
   document.getElementById("decodedToken").innerHTML = displayDecodedToken(token);
 }
 
+function formatJson(obj) {
+  return JSON.stringify(jwt.header, null, 4).replaceAll("\n", "<br>").replaceAll(" ", "&nbsp;");
+}
+
 function displayDecodedToken(token) {
   const jwt = new JWT(token);
-  return `<span class="w3-text-red">${jwt.header}</span>.<span class="w3-text-blue">${jwt.payload}</span>.<span class="w3-text-green">[Signature]</span>`;
+  const header = formatJson(jwt.header);
+  const payload = formatJson(jwt.payload);
+  return `<span class="w3-text-red">${header}</span>.<span class="w3-text-blue">${payload}</span>.<span class="w3-text-green">[Signature]</span>`;
 }
 
 function purgeLocalStorage() {
   //tbd
-localStorage.removeItem("decoderidentitytokens");
+  localStorage.removeItem("decoderidentitytokens");
 }
 
 displayToken("token1")

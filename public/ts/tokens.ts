@@ -8,8 +8,8 @@ class Token {
 
 // Pure JWTs
 class JWT extends Token {
-  public header: string;
-  public payload: string;
+  public header: object;
+  public payload: object;
   public signature: string;
 
   constructor(token: string) {
@@ -21,8 +21,8 @@ class JWT extends Token {
       throw new Error("Invalid token - JWTs have 3 parts separated by '.'");
     }
 
-    this.header = atob(parts[0]);
-    this.payload = atob(parts[1]);
+    this.header = JSON.parse(atob(parts[0]));
+    this.payload = JSON.parse(atob(parts[1]));
     this.signature = parts[2];
   }
 }
