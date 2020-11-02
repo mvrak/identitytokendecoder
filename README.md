@@ -23,3 +23,6 @@ Token generation from Private Key
 Adding of .cer/pfx files
 Support for PFT
 CBOR, concise binary object representation for JWTs, easy to get standard library and parse
+Comparison view
+In List delete?
+Function to request access token for AAD app IDs
