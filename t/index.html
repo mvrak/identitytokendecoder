@@ -19,7 +19,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
   class="w3-bar-item w3-button w3-hide-large w3-large">Close <i class="fa fa-remove"></i></a>
   <a href="javascript:void(0)" class="w3-bar-item w3-button w3-dark-grey w3-button w3-hover-black w3-left-align" onclick="document.getElementById('newPayload').style.display='block'">New Payload <i class="w3-padding fa fa-pencil"></i></a>
   <a href="javascript:void(0)" class="w3-bar-item w3-button w3-dark-grey w3-button w3-hover-black w3-left-align" onclick="document.getElementById('newSecret').style.display='block'">New Secret <i class="w3-padding fa fa-pencil"></i></a>
-  <a id="myBtn" onclick="myFunc('tokens')" href="javascript:void(0)" class="w3-bar-item w3-button"><i class="fa fa-inbox w3-margin-right"></i>Tokens<i class="fa fa-caret-down w3-margin-left"></i></a>
+  <a id="myBtn" onclick="myFunc('tokens')" href="javascript:void(0)" class="w3-bar-item w3-button"><i class="fa fa-suitcase w3-margin-right"></i>Tokens<i class="fa fa-caret-down w3-margin-left"></i></a>
   <div id="tokens" class="w3-hide w3-animate-left">
     <a href="javascript:void(0)" class="w3-bar-item w3-button w3-border-bottom test w3-hover-light-grey" onclick="openMail('token1');w3_close();" id="firstTab">
       <div class="w3-container">
@@ -214,6 +214,8 @@ var openTab = document.getElementById("firstTab");
 openTab.click();
 </script>
 <!-- TBD add hooks to save to localstorage, and to pull from localstorage and repopulate page content.  Local storage should always be in sync with the current page view.-->
+
+<script src="settings.js"></script>
 
 </body>
 </html> 

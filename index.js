@@ -35,7 +35,7 @@ const cca = new msal.ConfidentialClientApplication(config);
 const app = express();
 
 //set static directory for img/css/js
-app.use('/s/', express.static('public'));
+app.use(express.static('s'));
 
 app.all("*", (req, res) => {	
 	res.sendFile(path.join(__dirname + '/t/index.html'));
