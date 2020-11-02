@@ -18,6 +18,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
   <a href="javascript:void(0)" onclick="w3_close()" title="Close Sidemenu" 
   class="w3-bar-item w3-button w3-hide-large w3-large">Close <i class="fa fa-remove"></i></a>
   <a href="javascript:void(0)" class="w3-bar-item w3-button w3-dark-grey w3-button w3-hover-black w3-left-align" onclick="document.getElementById('newPayload').style.display='block'">New Payload <i class="w3-padding fa fa-pencil"></i></a>
+  <a href="javascript:void(0)" class="w3-bar-item w3-button w3-dark-grey w3-button w3-hover-black w3-left-align" onclick="document.getElementById('newSecret').style.display='block'">New Secret <i class="w3-padding fa fa-pencil"></i></a>
   <a id="myBtn" onclick="myFunc('tokens')" href="javascript:void(0)" class="w3-bar-item w3-button"><i class="fa fa-inbox w3-margin-right"></i>Tokens<i class="fa fa-caret-down w3-margin-left"></i></a>
   <div id="tokens" class="w3-hide w3-animate-left">
     <a href="javascript:void(0)" class="w3-bar-item w3-button w3-border-bottom test w3-hover-light-grey" onclick="openMail('token1');w3_close();" id="firstTab">
@@ -91,6 +92,29 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
   </div>
 </div>
 
+<!-- Modal that pops up when you click on "New Payload" -->
+<div id="newSecret" class="w3-modal" style="z-index:4">
+  <div class="w3-modal-content w3-animate-zoom">
+    <div class="w3-container w3-padding w3-red">
+       <span onclick="document.getElementById('newSecret').style.display='none'"
+       class="w3-button w3-red w3-right w3-xxlarge"><i class="fa fa-remove"></i></span>
+      <h2>Enter payload</h2>
+    </div>
+    <div class="w3-panel">
+      <label>Description</label>
+      <input class="w3-input w3-border w3-margin-bottom w3-round" type="text" placeholder="Optional">
+      <label>Encryption Key</label>
+      <input class="w3-input w3-border w3-margin-bottom w3-round" type="text" placeholder="Optional">
+      <label>Payload</label>
+      <input class="w3-input w3-border w3-margin-bottom w3-round" style="height:150px" placeholder="Should be a long string of random characters separated by periods">
+      <div class="w3-section">
+        <a class="w3-button w3-red" onclick="document.getElementById('newPayload').style.display='none'">Cancel  <i class="fa fa-remove"></i></a>
+        <a class="w3-button w3-green w3-right" onclick="document.getElementById('newPayload').style.display='none'">Save  <i class="fa fa-save"></i></a> 
+      </div>    
+    </div>
+  </div>
+</div>
+
 <!-- Overlay effect when opening the side navigation on small screens -->
 <div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" title="Close Sidemenu" id="myOverlay"></div>
 
@@ -108,7 +132,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
   <a class="w3-button w3-light-grey" href="#">Edit<i class="w3-margin-left fa fa-mail-reply"></i></a>
   <a class="w3-button w3-light-grey" href="#">Delete<i class="w3-margin-left fa fa-arrow-right"></i></a>
   <hr>
-  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3ODZlZmY0OS00OWQ2LTQ4YjQtODM4NC0yYTA5NDYxODJmN2YiLCJ2YWxpZCI6IjEiLCJ1c2VyaWQiOiIxIiwibmFtZSI6ImJpbGFsIiwiZXhwIjoxNTcwNjMwMzMwLCJpc3MiOiJodHRwOi8vbXlzaXRlLmNvbSIsImF1ZCI6Imh0dHA6Ly9teXNpdGUuY29tIn0.06vzYfiSpj1X9s0-CL2nE7NH4LloASMikZCNfHIJ8tY
+  <div style="width:100%" contenteditable="true" onblur="colorMe()">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3ODZlZmY0OS00OWQ2LTQ4YjQtODM4NC0yYTA5NDYxODJmN2YiLCJ2YWxpZCI6IjEiLCJ1c2VyaWQiOiIxIiwibmFtZSI6ImJpbGFsIiwiZXhwIjoxNTcwNjMwMzMwLCJpc3MiOiJodHRwOi8vbXlzaXRlLmNvbSIsImF1ZCI6Imh0dHA6Ly9teXNpdGUuY29tIn0.06vzYfiSpj1X9s0-CL2nE7NH4LloASMikZCNfHIJ8tY</div>
 </div>
 <!-- Fragment End -->
 <div id="token2" class="w3-container token">
@@ -184,6 +208,18 @@ function purgeAll(){
 
 function purgeDisplay() {
   //tbd
+}
+colors=["w3-text-red", "w3-text-blue", "w3-text-green", "w3-text-orange", "w3-text-purple", "w3-text-teal"]
+
+segments="";
+function colorMe(){
+  segments = event.currentTarget.textContent.split(".");
+  coloredstring="";
+  for (i=0; i<segments.length; i++) {
+    coloredstring += "<span class='"+colors[i]+"'>"+segments[i]+"</span>.";
+  }
+  coloredstring = coloredstring.slice(0, -1);
+  event.currentTarget.innerHTML = coloredstring;
 }
 
 function purgeLocalStorage() {
