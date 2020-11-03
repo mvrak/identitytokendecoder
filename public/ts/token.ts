@@ -1,3 +1,5 @@
+// Contains logic for parsing tokens
+
 class Token {
   public raw: string;
   
@@ -21,8 +23,19 @@ class JWT extends Token {
       throw new Error("Invalid token - JWTs have 3 parts separated by '.'");
     }
 
-    this.header = JSON.parse(atob(parts[0]));
-    this.payload = JSON.parse(atob(parts[1]));
+    try {
+      this.header = JSON.parse(atob(parts[0]));
+    } catch {
+      throw new Error("Invalid token - header could not be parsed");
+    }
+
+    try {
+      this.payload = JSON.parse(atob(parts[1]));
+    } catch {
+      throw new Error("Invalid token - payload could not be parsed");
+    }
+
     this.signature = parts[2];
   }
 }
+
