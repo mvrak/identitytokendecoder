@@ -1,8 +1,3 @@
-import "key.ts";
-import "secret.ts";
-import "token.ts";
-import "tokenModel.ts";
-
 // App model
 
 class App {
