@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 <link href='https://fonts.googleapis.com/css?family=RobotoDraft' rel='stylesheet' type='text/css'>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"><style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
 html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
 .w3-bar-block .w3-bar-item {padding: 16px}
 </style>
@@ -19,26 +20,10 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
   class="w3-bar-item w3-button w3-hide-large w3-large">Close <i class="fa fa-remove"></i></a>
   <a href="javascript:void(0)" class="w3-bar-item w3-button w3-dark-grey w3-button w3-hover-black w3-left-align" onclick="document.getElementById('newPayload').style.display='block'">New Payload <i class="w3-padding fa fa-pencil"></i></a>
   <a href="javascript:void(0)" class="w3-bar-item w3-button w3-dark-grey w3-button w3-hover-black w3-left-align" onclick="document.getElementById('newSecret').style.display='block'">New Secret <i class="w3-padding fa fa-pencil"></i></a>
-  <a id="myBtn" onclick="myFunc('tokens')" href="javascript:void(0)" class="w3-bar-item w3-button"><i class="fa fa-suitcase w3-margin-right"></i>Tokens<i class="fa fa-caret-down w3-margin-left"></i></a>
-  <div id="tokens" class="w3-hide w3-animate-left">
-    <a href="javascript:void(0)" class="w3-bar-item w3-button w3-border-bottom test w3-hover-light-grey" onclick="openMail('token1');w3_close();" id="firstTab">
-      <div class="w3-container">
-        <i class="w3-margin-right fa fa-id-card-o w3-animate-top"></i><span class="w3-opacity w3-large">Sample Token</span>
-        <h6>January 1, 2000</h6>
-        <p><span class="w3-text-red">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</span>.<span class="w3-text-blue">eyJqdGkiOiI3ODZlZmY0OS00OWQ2LTQ4YjQtODM4NC0yYTA5NDYxODJmN2YiLCJ2YWxpZCI6IjEiLCJ1c2VyaWQiOiIxIiwibmFtZSI6ImJpbGFsIiwiZXhwIjoxNTcwNjMwMzMwLCJpc3MiOiJodHRwOi8vbXlzaXRlLmNvbSIsImF1ZCI6Imh0dHA6Ly9teXNpdGUuY29tIn0</span>.<span class="w3-text-green">06vzYfiSpj1X9s0-CL2nE7NH4LloASMikZCNfHIJ8tY</span></p>
-      </div>
-    </a>
-  </div>
-  <a id="myBtn2" onclick="myFunc('keys')" href="javascript:void(0)" class="w3-bar-item w3-button"><i class="fa fa-key w3-margin-right"></i>Decryption Keys<i class="fa fa-caret-down w3-margin-left"></i></a>
-  <div id="keys" class="w3-hide w3-animate-left">
-    <a href="javascript:void(0)" class="w3-bar-item w3-button w3-border-bottom test w3-hover-light-grey" onclick="openKey('key1');w3_close();" id="firstTab">
-      <div class="w3-container">
-        <i class="w3-margin-right fa fa-key w3-animate-top"></i><span class="w3-opacity w3-large">Sample Secret</span>
-        <h6>January 1, 2000</h6>
-        <p>IUzI1NiIsInR5cCI6IkpXVCJ9</p>
-      </div>
-    </a>  
-  </div>
+  <a id="tokensBtn" onclick="expandMenu('tokens')" href="javascript:void(0)" class="w3-bar-item w3-button"><i class="fa fa-inbox w3-margin-right"></i>Tokens<i class="fa fa-caret-down w3-margin-left"></i></a>
+  <div id="tokens" class="w3-hide w3-animate-left"></div>
+  <a id="keysButton" onclick="expandMenu('keys')" href="javascript:void(0)" class="w3-bar-item w3-button"><i class="fa fa-key w3-margin-right"></i>Decryption Keys<i class="fa fa-caret-down w3-margin-left"></i></a>
+  <div id="keys" class="w3-hide w3-animate-left"></div>
   <a href="#" onclick="document.getElementById('purgeModal').style.display='block'" class="w3-bar-item w3-button"><i class="fa fa-trash w3-margin-right"></i>Forget all data</a>
   </nav>
 
@@ -112,110 +97,18 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
 <a href="javascript:void(0)" class="w3-hide-large w3-red w3-button w3-right w3-margin-top w3-margin-right" onclick="document.getElementById('newPayload').style.display='block'"><i class="fa fa-pencil"></i></a>
 
 <!-- Payload display Fragment -->
-<div id="token1" class="w3-container token">
-  <br>
-  <i class="fa fa-id-card-o w3-animate-top"></i>
-  <h5 class="w3-opacity">Sample Token</h5>
-  <h4><i class="fa fa-clock-o"></i> January 1, 2000 </h4>
-  <a class="w3-button w3-light-grey" href="#">Edit<i class="w3-margin-left fa fa-mail-reply"></i></a>
-  <a class="w3-button w3-light-grey" href="#">Delete<i class="w3-margin-left fa fa-arrow-right"></i></a>
-  <hr>
-  <div style="width:100%" contenteditable="true" onblur="colorMe()"><span class="w3-text-red">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</span>.<span class="w3-text-blue">eyJqdGkiOiI3ODZlZmY0OS00OWQ2LTQ4YjQtODM4NC0yYTA5NDYxODJmN2YiLCJ2YWxpZCI6IjEiLCJ1c2VyaWQiOiIxIiwibmFtZSI6ImJpbGFsIiwiZXhwIjoxNTcwNjMwMzMwLCJpc3MiOiJodHRwOi8vbXlzaXRlLmNvbSIsImF1ZCI6Imh0dHA6Ly9teXNpdGUuY29tIn0</span>.<span class="w3-text-green">06vzYfiSpj1X9s0-CL2nE7NH4LloASMikZCNfHIJ8tY</span></div>
-</div>
+<div id="tokenDisplay" class="w3-container"></div>
 <!-- Fragment End --> 
 </div>
 
-<script>
-var openInbox = document.getElementById("myBtn");
-openInbox.click();
+<script src="ts/claims.js"></script>
+<script src="ts/key.js"></script>
+<script src="ts/model.js"></script>
+<script src="ts/secret.js"></script>
+<script src="ts/token.js"></script>
+<script src="ts/tokenModel.js"></script>
 
-function w3_open() {
-  document.getElementById("mySidebar").style.display = "block";
-  document.getElementById("myOverlay").style.display = "block";
-}
-
-function w3_close() {
-  document.getElementById("mySidebar").style.display = "none";
-  document.getElementById("myOverlay").style.display = "none";
-}
-
-function myFunc(id) {
-  var x = document.getElementById(id);
-  if (x.className.indexOf("w3-show") == -1) {
-    x.className += " w3-show"; 
-    x.previousElementSibling.className += " w3-red";
-  } else { 
-    x.className = x.className.replace(" w3-show", "");
-    x.previousElementSibling.className = 
-    x.previousElementSibling.className.replace(" w3-red", "");
-  }
-}
-
-function retrieveAll(){
-  data = localStorage.getItem("decoderidentitytokens");
-  tokens = data["tokens"];
-  keys = data["keys"];
-  renderTokens(tokens);
-  renderKeys(keys);
-}
-
-function renderTokens(){
-  //tbd
-}
-
-function renderKeys(){
-  //tbd
-}
-
-function purgeAll(){
-  purgeDisplay();
-  purgeLocalStorage();
-}
-
-function purgeDisplay() {
-  //tbd
-}
-
-colors=["w3-text-red", "w3-text-blue", "w3-text-green", "w3-text-orange", "w3-text-purple", "w3-text-teal", "w3-text-blue-gray", "w3-text-amber", "w3-text-indigo", "w3-text-lime"]
-
-function colorMe(){
-  segments = event.currentTarget.textContent.split(".");
-  coloredstring="";
-  for (i=0; i<segments.length; i++) {
-    coloredstring += "<span class='"+colors[i]+"'>"+segments[i]+"</span>.";
-  }
-  coloredstring = coloredstring.slice(0, -1);
-  event.currentTarget.innerHTML = coloredstring;
-}
-
-function purgeLocalStorage() {
-  //tbd
-localStorage.removeItem("decoderidentitytokens");
-}
-
-openMail("token1")
-function openMail(personName) {
-  var i;
-  var x = document.getElementsByClassName("token");
-  for (i = 0; i < x.length; i++) {
-    x[i].style.display = "none";
-  }
-  x = document.getElementsByClassName("test");
-  for (i = 0; i < x.length; i++) {
-    x[i].className = x[i].className.replace(" w3-light-grey", "");
-  }
-  document.getElementById(personName).style.display = "block";
-  event.currentTarget.className += " w3-light-grey";
-}
-</script>
-
-<script>
-var openTab = document.getElementById("firstTab");
-openTab.click();
-</script>
-<!-- TBD add hooks to save to localstorage, and to pull from localstorage and repopulate page content.  Local storage should always be in sync with the current page view.-->
-
-<script src="settings.js"></script>
+<script src="ts/app.js"></script>
 
 </body>
 </html> 
