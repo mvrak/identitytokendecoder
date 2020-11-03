@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es5",
-    "outDir": "public/ts/c",
+    "outDir": "s/ts/c",
     "sourceMap": true
   }
 }
