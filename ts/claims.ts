@@ -129,3 +129,28 @@ const claimTypeDescriptions = {
   "google_iss": "The Issuer Identifier for the Issuer of the response. Always https://accounts.google.com or accounts.google.com for Google ID tokens.",
   "aad_groups": "Provides object IDs that represent the subject\"s group memberships. These values are unique (see Object ID) and can be safely used for managing access, such as enforcing authorization to access a resource. The groups included in the groups claim are configured on a per-application basis, through the groupMembershipClaims property of the application manifest. A value of null will exclude all groups, a value of \"SecurityGroup\" will include only Active Directory Security Group memberships, and a value of \"All\" will include both Security Groups and Office 365 Distribution Lists.<br/>See the hasgroups claim below for details on using the groups claim with the implicit grant.<br/>For other flows, if the number of groups the user is in goes over a limit (150 for SAML, 200 for JWT), then an overage claim will be added to the claim sources pointing at the Graph endpoint containing the list of groups for the user."
 };
+
+function getIssuerDetails(iss: string): string {
+  // TODO: Figure out how to determine issuer for more issuers
+  if (!!iss) {
+    if (iss.startsWith("https://sts.windows.net")) {
+      return "aad";
+    }
+  }
+  return null;
+}
+
+function translateClaimsValue(claimType: string, value: any): string {
+  if (value === null) {
+    return "";
+  }
+  if (claimType === "iat" || claimType === "nbf" || claimType === "exp") {
+    return new Date(value as number).toString();
+  }
+  if (typeof value === "object") {
+    if (!Array.isArray(value)) {
+      return JSON.stringify(value, null, 4).replace(/\n/g, "<br>").replace(/ /g, "&nbsp;");
+    }
+  }
+  return value.toString();
+}

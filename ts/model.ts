@@ -70,10 +70,11 @@ class Model {
       <a class="w3-button w3-light-grey" href="#">Delete<i class="w3-margin-left fa fa-arrow-right"></i></a>
       <hr>
       <div style="width:100%" contenteditable="true" oninput="onTokenChange()" id="rawToken"></div>
-      <div style="width:100%" contenteditable="false" id="tokenParseError"></div>
-      <div style="width:100%" contenteditable="false" id="decodedToken"></div>`;
+      <div style="width:100%" contenteditable="false" id="tokenMessage"></div>
+      <div style="width:100%" contenteditable="false" id="decodedToken"></div>
+      <div style="width:100%" contenteditable="false" id="claimsTable"></div>`;
       document.getElementById("rawToken").innerHTML = this._displayColorCodedToken(token.rawToken);
-      this._renderDecodedToken(token.rawToken);
+      this._renderTokenDetails(token.rawToken);
     }
   
     public displayKey(keyId: string) {
@@ -87,20 +88,59 @@ class Model {
     public onTokenChange() {
       const tokenString =  document.getElementById("rawToken");
       tokenString.innerHTML = this._displayColorCodedToken(tokenString.textContent);
-      this._renderDecodedToken(tokenString.textContent);
+      this._renderTokenDetails(tokenString.textContent);
     }
   
-    private _renderDecodedToken(rawToken: string) {
+    private _renderTokenDetails(rawToken: string) {
       const decodedToken = document.getElementById("decodedToken");
-      const tokenParseError = document.getElementById("tokenParseError");
+      const tokenMessage = document.getElementById("tokenMessage");
+      const claimsTable = document.getElementById("claimsTable");
       try {
-        decodedToken.innerHTML = this._displayDecodedToken(rawToken);
-        tokenParseError.innerText = "";
+        const jwt = new JWT(rawToken);
+        decodedToken.innerHTML = this._displayDecodedToken(jwt);
+        claimsTable.innerHTML = this._displayClaimsTable(jwt);
+
+        const issuer = getIssuerDetails(jwt.payload["iss"]);
+        if (!!issuer) {
+          tokenMessage.innerText = issuingProviderDescriptions[issuer];
+        } else {
+          tokenMessage.innerHTML = "<br>";
+        }
       } catch (e) {
-        tokenParseError.innerText = e.message;
+        tokenMessage.innerText = e.message;
       }
     }
-  
+
+    private _displayDecodedToken(token: JWT): string {
+      const header = this.formatJson(token.header);
+      const payload = this.formatJson(token.payload);
+      return `<span class="w3-text-red">${header}</span>.
+      <span class="w3-text-blue">${payload}</span>.
+      <span class="w3-text-green">[Signature]</span>`;
+    }
+
+    private _displayClaimsTable(token: JWT): string {
+      return `<table class="w3-table">
+      <tr>
+        <th>Claim type</th>
+        <th>Value</th>
+        <th>Notes</th>
+      </tr>
+      ${this._getTableContents(token.payload)}
+      </table>`;
+    }
+
+    private _getTableContents(payload: object): string {
+      let contents = "";
+      for (const claimType in payload) {
+        const value = payload[claimType];
+        const notes = claimTypeDescriptions[claimType] ?? "";
+        const displayValue = translateClaimsValue(claimType, value);
+        contents += `<tr><td>${claimType}</td><td>${displayValue}</td><td>${notes}</td></tr>`
+      }
+      return contents;
+    }
+
     private _truncate(item: string): string {
       if (item.length > Model.maxTokenMenuLength) {
         item = item.slice(0, Model.maxTokenMenuLength - 3) + "...";
@@ -149,13 +189,6 @@ class Model {
     
     private formatJson(obj: object): string {
       return JSON.stringify(obj, null, 4).replace(/\n/g, "<br>").replace(/ /g, "&nbsp;");
-    }
-  
-    private _displayDecodedToken(rawToken: string): string {
-      const jwt = new JWT(rawToken);
-      const header = this.formatJson(jwt.header);
-      const payload = this.formatJson(jwt.payload);
-      return `<span class="w3-text-red">${header}</span>.<span class="w3-text-blue">${payload}</span>.<span class="w3-text-green">[Signature]</span>`;
     }
   
     private _purgeAll(){
