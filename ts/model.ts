@@ -102,21 +102,19 @@ class Model {
 
         const issuer = getIssuerDetails(jwt.payload["iss"]);
         if (!!issuer) {
-          tokenMessage.innerText = issuingProviderDescriptions[issuer];
+          tokenMessage.innerHTML = issuingProviderDescriptions[issuer];
         } else {
           tokenMessage.innerHTML = "<br>";
         }
       } catch (e) {
-        tokenMessage.innerText = e.message;
+        tokenMessage.innerHTML = e.message;
       }
     }
 
     private _displayDecodedToken(token: JWT): string {
       const header = this.formatJson(token.header);
       const payload = this.formatJson(token.payload);
-      return `<span class="w3-text-red">${header}</span>.
-      <span class="w3-text-blue">${payload}</span>.
-      <span class="w3-text-green">[Signature]</span>`;
+      return `<span class="w3-text-red">${header}</span>.<span class="w3-text-blue">${payload}</span>.<span class="w3-text-green">[Signature]</span>`;
     }
 
     private _displayClaimsTable(token: JWT): string {
