@@ -71,8 +71,10 @@ class Model {
       <hr>
       <div style="width:100%" contenteditable="true" oninput="onTokenChange()" id="rawToken"></div>
       <div style="width:100%" contenteditable="false" id="tokenMessage"></div>
-      <div style="width:100%" contenteditable="false" id="decodedToken"></div>
-      <div style="width:100%" contenteditable="false" id="claimsTable"></div>`;
+      <div class="grid-container">
+      <div class="grid-child decoded-token" contenteditable="false" id="decodedToken"></div>
+      <div class="grid-child claims-table" contenteditable="false" id="claimsTable"></div>
+      </div>`;
       document.getElementById("rawToken").innerHTML = this._displayColorCodedToken(token.rawToken);
       this._renderTokenDetails(token.rawToken);
     }
@@ -104,7 +106,7 @@ class Model {
         if (!!issuer) {
           tokenMessage.innerHTML = issuingProviderDescriptions[issuer];
         } else {
-          tokenMessage.innerHTML = "<br>";
+          tokenMessage.innerHTML = "&nbsp;";
         }
       } catch (e) {
         tokenMessage.innerHTML = e.message;
@@ -118,11 +120,11 @@ class Model {
     }
 
     private _displayClaimsTable(token: JWT): string {
-      return `<table class="w3-table">
+      return `<table class="w3-table-all">
       <tr>
-        <th>Claim type</th>
-        <th>Value</th>
-        <th>Notes</th>
+        <th width="20%">Claim type</th>
+        <th width="30%">Value</th>
+        <th width="50%">Notes</th>
       </tr>
       ${this._getTableContents(token.payload)}
       </table>`;
@@ -186,7 +188,7 @@ class Model {
     }
     
     private formatJson(obj: object): string {
-      return JSON.stringify(obj, null, 4).replace(/\n/g, "<br>").replace(/ /g, "&nbsp;");
+      return JSON.stringify(obj, null, '\t').replace(/\n/g, "<br>").replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;");
     }
   
     private _purgeAll(){

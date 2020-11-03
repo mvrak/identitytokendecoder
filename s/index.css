@@ -1,0 +1,23 @@
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  grid-gap: 20px;
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.decoded-token {
+  border: 1px solid black;
+  padding: 20px;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.claims-table {
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.crypto-settings {
+  border: 2px solid black;
+}
