@@ -1,3 +1,12 @@
+.input-box {
+  padding: 20px;
+  border: 1px solid black;
+  word-wrap: break-word;
+  word-break: break-word;
+  background-color: #f2f2f2;
+  border-radius: 10px;
+}
+
 .token-input {
   display: grid;
   grid-template-columns: 3fr 1fr;
@@ -12,28 +21,53 @@
   grid-gap: 20px;
   width: 100%;
   margin-bottom: 30px;
-  
 }
 
 .token-message {
   float: left;
-  padding: 20px;
+  padding: 10px 20px;
 }
 
 .token-box {
-  padding: 20px;
-  border: 1px solid black;
-  word-wrap: break-word;
-  word-break: break-word;
   min-height: 200px;
-  background-color: #f2f2f2;
-  border-radius: 10px;
+  float: left;
 }
 
-.input-button {
+.secret-display {
+  max-width: 800px;
+}
+
+.secret-box {
+  min-height: 100px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.secret-label {
+  margin-bottom: 15px;
+}
+
+.token-button {
   float: right;
   margin-left: 10px;
-  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.secret-input {
+  width: 100%;
+  float: left;
+}
+
+.secret-button-left {
+  float: left;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+.secret-button-right {
+  float: right;
+  margin-left: 10px;
+  margin-bottom: 10px;
 }
 
 .settings {

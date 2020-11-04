@@ -30,8 +30,8 @@ function displayToken(tokenId: string) {
   model.displayToken(tokenId);
 }
 
-function displayKey(keyId: string) {
-  model.displayKey(keyId);
+function displaySecret(keyId: string) {
+  model.displaySecret(keyId);
 }
 
 function openTab(tabName: string) {

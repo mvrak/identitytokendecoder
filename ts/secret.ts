@@ -1,10 +1,10 @@
-class Key {
+class Secret {
   public id: string;
   public title: string;
   public saved: Date;
 
-  public encryptionKey?: string;
-  public decryptionKey: string;
+  public publicKey?: string;
+  public privateKey?: string;
 
   public associatedTokens?: Token[];
 }

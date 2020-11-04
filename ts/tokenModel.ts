@@ -6,5 +6,5 @@ class TokenModel {
   public rawToken: string;
   
   // References to keys
-  public key?: Key;
+  public key?: Secret;
 }

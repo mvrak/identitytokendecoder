@@ -19,7 +19,7 @@ class Model {
   private static readonly LocalStorageKey: string = "decoderidentitytokens"; 
 
   private _tokens: TokenModel[];
-  private _keys: Key[];
+  private _secrets: Secret[];
 
   private _settingsTab: string;
 
@@ -39,20 +39,20 @@ class Model {
       }
     ];
     
-    this._keys = [
+    this._secrets = [
       {
-        id: "key1",
+        id: "secret1",
         title: "Sample Key",
         saved: new Date("1 November, 2020"),
-        decryptionKey: "IUzI1NiIsInR5cCI6IkpXVCJ9"
+        publicKey: "IUzI1NiIsInR5cCI6IkpXVCJ9"
       }
     ];
 
     this._settingsTab = "verify";
 
     expandMenu("tokens");
-    this._renderKeys();
     this._renderTokens();
+    this._renderSecrets();
 
     this.displayToken("token1")
   }
@@ -79,15 +79,15 @@ class Model {
     this.openTab(this._settingsTab);
   }
 
-  public displayKey(keyId: string) {
-    this._highlightMenuItem(keyId);
-    let key = this._keys.filter((key) => key.id === keyId)[0];
+  public displaySecret(secretId: string) {
+    this._highlightMenuItem(secretId);
+    let secret = this._secrets.filter((secret) => secret.id === secretId)[0];
 
     document.getElementById("tokensDisplay").style.display = "none";
     document.getElementById("secretsDisplay").style.display = "block";
 
-    document.getElementById("secretTitle").innerHTML = key.title;
-    document.getElementById("secretLastSaved").innerHTML = `Last saved ${key.saved.toLocaleString()}`;
+    document.getElementById("secretTitle").innerHTML = secret.title;
+    document.getElementById("secretLastSaved").innerHTML = `Last saved ${secret.saved.toLocaleString()}`;
   }
   
   public onTokenChange() {
@@ -143,7 +143,7 @@ class Model {
         if (!!issuer) {
           tokenMessage.innerHTML = issuingProviderDescriptions[issuer];
         } else {
-          tokenMessage.innerHTML = "";
+          tokenMessage.innerHTML = "This token is valid";
         }
       } catch (e) {
         tokenMessage.innerHTML = `<span class="w3-text-red">${e.message}</span>`;
@@ -211,16 +211,16 @@ class Model {
     }); 
   }
   
-  private _renderKeys() {
-    let keysDiv = document.getElementById("keys");
+  private _renderSecrets() {
+    let secretsDiv = document.getElementById("secrets");
     
-    this._keys.forEach(key => {
-      keysDiv.innerHTML +=
-      `<a href="javascript:void(0)" class="w3-bar-item w3-button w3-border-bottom menu w3-hover-light-grey" onclick="displayKey('${key.id}');w3_close();" id="${key.id}">
+    this._secrets.forEach(secret => {
+      secretsDiv.innerHTML +=
+      `<a href="javascript:void(0)" class="w3-bar-item w3-button w3-border-bottom menu w3-hover-light-grey" onclick="displaySecret('${secret.id}');w3_close();" id="${secret.id}">
       <div class="w3-container">
-        <i class="w3-margin-right fa fa-id-card-o w3-animate-top"></i><span class="w3-opacity w3-large">${key.title}</span>
-        <h6 class="w3-opacity">${key.saved.toLocaleString()}</h6>
-        <p>${key.decryptionKey}</p>
+        <i class="w3-margin-right fa fa-id-card-o w3-animate-top"></i><span class="w3-opacity w3-large">${secret.title}</span>
+        <h6 class="w3-opacity">${secret.saved.toLocaleString()}</h6>
+        <p>${secret.publicKey}</p>
       </div>
       </a>`
     });

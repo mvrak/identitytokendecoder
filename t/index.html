@@ -19,12 +19,12 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
   <a href="/" class="w3-bar-item w3-button w3-border-bottom w3-large">Identity Token Decoder</a>
   <a href="javascript:void(0)" onclick="w3_close()" title="Close Sidemenu" 
   class="w3-bar-item w3-button w3-hide-large w3-large">Close <i class="fa fa-remove"></i></a>
-  <a href="javascript:void(0)" class="w3-bar-item w3-button w3-dark-grey w3-button w3-hover-black w3-left-align" onclick="displayToken('')">New Payload <i class="w3-padding fa fa-pencil"></i></a>
+  <a href="javascript:void(0)" class="w3-bar-item w3-button w3-dark-grey w3-button w3-hover-black w3-left-align" onclick="displayToken('')">New Token <i class="w3-padding fa fa-pencil"></i></a>
   <a href="javascript:void(0)" class="w3-bar-item w3-button w3-dark-grey w3-button w3-hover-black w3-left-align" onclick="document.getElementById('newSecret').style.display='block'">New Secret <i class="w3-padding fa fa-pencil"></i></a>
   <a id="tokensBtn" onclick="expandMenu('tokens')" href="javascript:void(0)" class="w3-bar-item w3-button"><i class="fa fa-inbox w3-margin-right"></i>Tokens<i class="fa fa-caret-down w3-margin-left"></i></a>
   <div id="tokens" class="w3-hide w3-animate-left"></div>
-  <a id="keysButton" onclick="expandMenu('keys')" href="javascript:void(0)" class="w3-bar-item w3-button"><i class="fa fa-key w3-margin-right"></i>Decryption Keys<i class="fa fa-caret-down w3-margin-left"></i></a>
-  <div id="keys" class="w3-hide w3-animate-left"></div>
+  <a id="secretsBtn" onclick="expandMenu('secrets')" href="javascript:void(0)" class="w3-bar-item w3-button"><i class="fa fa-key w3-margin-right"></i>Secrets<i class="fa fa-caret-down w3-margin-left"></i></a>
+  <div id="secrets" class="w3-hide w3-animate-left"></div>
   <a href="#" onclick="document.getElementById('purgeModal').style.display='block'" class="w3-bar-item w3-button"><i class="fa fa-trash w3-margin-right"></i>Forget all data</a>
   </nav>
 
@@ -38,52 +38,6 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
       <div class="w3-section">
         <a class="w3-button w3-red" onclick="document.getElementById('purgeModal').style.display='none';purgeAll();">Forget All <i class="w3-margin-left fa fa-remove"></i></a>
         <a class="w3-button w3-green w3-right" onclick="document.getElementById('purgeModal').style.display='none';">Cancel <i class="w3-margin-left fa fa-save"></i></a> 
-      </div>    
-    </div>
-  </div>
-</div>
-
-<!-- Modal that pops up when you click on "New Payload" -->
-<div id="newPayload" class="w3-modal" style="z-index:4">
-  <div class="w3-modal-content w3-animate-zoom">
-    <div class="w3-container w3-padding w3-red">
-       <span onclick="document.getElementById('newPayload').style.display='none'"
-       class="w3-button w3-red w3-right w3-xxlarge"><i class="fa fa-remove"></i></span>
-      <h2>Enter payload</h2>
-    </div>
-    <div class="w3-panel">
-      <label>Description</label>
-      <input class="w3-input w3-border w3-margin-bottom w3-round" type="text" placeholder="Optional">
-      <label>Encryption Key</label>
-      <input class="w3-input w3-border w3-margin-bottom w3-round" type="text" placeholder="Optional">
-      <label>Payload</label>
-      <input class="w3-input w3-border w3-margin-bottom w3-round" style="height:150px" placeholder="Should be a long string of random characters separated by periods">
-      <div class="w3-section">
-        <a class="w3-button w3-red" onclick="document.getElementById('newPayload').style.display='none'">Cancel  <i class="fa fa-remove"></i></a>
-        <a class="w3-button w3-green w3-right" onclick="document.getElementById('newPayload').style.display='none'">Save  <i class="fa fa-save"></i></a> 
-      </div>    
-    </div>
-  </div>
-</div>
-
-<!-- Modal that pops up when you click on "New Secret" -->
-<div id="newSecret" class="w3-modal" style="z-index:4">
-  <div class="w3-modal-content w3-animate-zoom">
-    <div class="w3-container w3-padding w3-red">
-       <span onclick="document.getElementById('newSecret').style.display='none'"
-       class="w3-button w3-red w3-right w3-xxlarge"><i class="fa fa-remove"></i></span>
-      <h2>Enter payload</h2>
-    </div>
-    <div class="w3-panel">
-      <label>Description</label>
-      <input class="w3-input w3-border w3-margin-bottom w3-round" type="text" placeholder="Optional">
-      <label>Encryption Key</label>
-      <input class="w3-input w3-border w3-margin-bottom w3-round" type="text" placeholder="Optional">
-      <label>Payload</label>
-      <input class="w3-input w3-border w3-margin-bottom w3-round" style="height:150px" placeholder="Should be a long string of random characters separated by periods">
-      <div class="w3-section">
-        <a class="w3-button w3-red" onclick="document.getElementById('newPayload').style.display='none'">Cancel <i class="fa fa-remove"></i></a>
-        <a class="w3-button w3-green w3-right" onclick="document.getElementById('newPayload').style.display='none'">Save <i class="fa fa-save"></i></a> 
       </div>    
     </div>
   </div>
@@ -104,13 +58,13 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
   <h6 class="w3-opacity"><i class="fa fa-clock-o "></i> <span id="tokenLastSaved"></span></h6>
   <hr>
   <div class="grid-container token-input" id="tokenInput">
-    <div class="grid-child token-box-wrapper">
-      <h6>Enter token below (it never leaves the browser):</h6>
-      <div class="token-box" contenteditable="true" oninput="onTokenChange()" id="rawToken"></div>
+    <div class="grid-child">
+      <h6 style="float:left">Enter token below (it never leaves the browser):</h6>
+      <a class="w3-button w3-light-grey token-button" href="#">Delete<i class="w3-margin-left fa fa-trash"></i></a>
+      <a class="w3-button w3-light-grey token-button" href="#">Discard<i class="w3-margin-left fa fa-times"></i></a>
+      <a class="w3-button w3-light-grey token-button" href="#">Save<i class="w3-margin-left fa fa-save"></i></a>
+      <div class="token-box input-box" contenteditable="true" oninput="onTokenChange()" id="rawToken"></div>
       <div class="token-message" id="tokenMessage"></div>
-      <a class="w3-button w3-light-grey input-button" href="#">Delete<i class="w3-margin-left fa fa-trash"></i></a>
-      <a class="w3-button w3-light-grey input-button" href="#">Discard<i class="w3-margin-left fa fa-times"></i></a>
-      <a class="w3-button w3-light-grey input-button" href="#">Save<i class="w3-margin-left fa fa-save"></i></a>
     </div>
     <div class="grid-child settings">
       <div class="tab">
@@ -162,12 +116,29 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
   <h4><i class="fa fa-id-card-o w3-animate-top"></i> <span id="secretTitle"></span></h4>
   <h6 class="w3-opacity"><i class="fa fa-clock-o "></i> <span id="secretLastSaved"></span></h6>
   <hr>
+  <div class="secret-display">
+    <div class="secret-buttons">
+      <a class="w3-button w3-light-grey secret-button-left" href="#">Fetch<i class="w3-margin-left fa fa-arrow-circle-down"></i></a>
+      <a class="w3-button w3-light-grey secret-button-left" href="#">Upload<i class="w3-margin-left fa fa-upload"></i></a>
+      <a class="w3-button w3-light-grey secret-button-right" href="#">Delete<i class="w3-margin-left fa fa-trash"></i></a>
+      <a class="w3-button w3-light-grey secret-button-right" href="#">Discard<i class="w3-margin-left fa fa-times"></i></a>
+      <a class="w3-button w3-light-grey secret-button-right" href="#">Save<i class="w3-margin-left fa fa-save"></i></a>
+    </div>
+
+    <div class="secret-input">
+      <h6 class="secret-label">Public key (used for verification and encryption):</h6>
+      <div class="secret-box input-box" contenteditable="true" oninput="onSecretChange()" id="publicKey"></div>
+      <h6 class="secret-label">Private key (used for generation and decryption):</h6>
+      <div class="secret-box input-box" contenteditable="true" oninput="onSecretChange()" id="privateKey"></div>
+    </div>
+    <div class="secret-details">
+    </div>
+  </div>
 </div>
 <!-- Fragment End -->
 </div>
 
 <script src="ts/claims.js"></script>
-<script src="ts/key.js"></script>
 <script src="ts/model.js"></script>
 <script src="ts/secret.js"></script>
 <script src="ts/token.js"></script>
