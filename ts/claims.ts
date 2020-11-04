@@ -149,7 +149,7 @@ function translateClaimsValue(claimType: string, value: any): string {
   }
   if (typeof value === "object") {
     if (!Array.isArray(value)) {
-      return JSON.stringify(value, null, 4).replace(/\n/g, "<br>").replace(/ /g, "&nbsp;");
+      return formatJson(value);
     }
   }
   return value.toString();

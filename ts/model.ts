@@ -1,7 +1,7 @@
 // Model model
 
 class Model {
-  private static readonly maxTokenMenuLength: number = 40;
+  private static readonly maxTokenMenuLength: number = 35;
 
   private static readonly tokenColors: string[] = [
     "w3-text-red",
@@ -71,7 +71,7 @@ class Model {
       this._renderTokenDetails(token.rawToken);
     } else {
       document.getElementById("tokenTitle").innerHTML = "New Token";
-      document.getElementById("tokenLastSaved").innerHTML = "Unsaved"
+      document.getElementById("tokenLastSaved").innerHTML = "Unsaved";
       document.getElementById("rawToken").innerHTML = "";
       this._renderTokenDetails("");
     }
@@ -86,8 +86,17 @@ class Model {
     document.getElementById("tokensDisplay").style.display = "none";
     document.getElementById("secretsDisplay").style.display = "block";
 
-    document.getElementById("secretTitle").innerHTML = secret.title;
-    document.getElementById("secretLastSaved").innerHTML = `Last saved ${secret.saved.toLocaleString()}`;
+    if (!!secret) {
+      document.getElementById("secretTitle").innerHTML = secret.title;
+      document.getElementById("secretLastSaved").innerHTML = `Last saved ${secret.saved.toLocaleString()}`;
+      document.getElementById("publicKey").innerHTML = secret.publicKey;
+      document.getElementById("privateKey").innerHTML = secret.privateKey ?? "";
+    } else {
+      document.getElementById("secretTitle").innerHTML = "New Secret";
+      document.getElementById("secretLastSaved").innerHTML = "Unsaved";
+      document.getElementById("publicKey").innerHTML = "";
+      document.getElementById("privateKey").innerHTML = "";
+    }
   }
   
   public onTokenChange() {
@@ -162,8 +171,8 @@ class Model {
   }
 
   private _displayDecodedToken(token: JWT): string {
-    const header = this.formatJson(token.header);
-    const payload = this.formatJson(token.payload);
+    const header = formatJson(token.header);
+    const payload = formatJson(token.payload);
     return `<span class="w3-text-red">${header}</span>.<span class="w3-text-blue">${payload}</span>.<span class="w3-text-green">[Signature]</span>`;
   }
 
@@ -234,10 +243,6 @@ class Model {
     }
     return coloredstring.slice(0, -1);
   }
-  
-  private formatJson(obj: object): string {
-    return JSON.stringify(obj, null, '\t').replace(/\n/g, "<br>").replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;");
-  }
 
   private _purgeAll(){
     this._purgeDisplay();
@@ -252,6 +257,4 @@ class Model {
     //tbd
     localStorage.removeItem(Model.LocalStorageKey);
   }
-
-  
 }

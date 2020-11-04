@@ -25,12 +25,13 @@
 
 .token-message {
   float: left;
-  padding: 10px 20px;
+  padding-top: 10px;
 }
 
 .token-box {
   min-height: 200px;
   float: left;
+  width: 100%;
 }
 
 .secret-display {
