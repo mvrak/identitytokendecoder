@@ -157,7 +157,7 @@ class Model {
         <th width="50%">Notes</th>
       </tr>
       </table>`;
-      tokenMessage.innerHTML = "Enter token above (it never leaves the browser)";
+      tokenMessage.innerHTML = "";
     }
   }
 

@@ -82,8 +82,8 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
       <label>Payload</label>
       <input class="w3-input w3-border w3-margin-bottom w3-round" style="height:150px" placeholder="Should be a long string of random characters separated by periods">
       <div class="w3-section">
-        <a class="w3-button w3-red" onclick="document.getElementById('newPayload').style.display='none'">Cancel  <i class="fa fa-remove"></i></a>
-        <a class="w3-button w3-green w3-right" onclick="document.getElementById('newPayload').style.display='none'">Save  <i class="fa fa-save"></i></a> 
+        <a class="w3-button w3-red" onclick="document.getElementById('newPayload').style.display='none'">Cancel <i class="fa fa-remove"></i></a>
+        <a class="w3-button w3-green w3-right" onclick="document.getElementById('newPayload').style.display='none'">Save <i class="fa fa-save"></i></a> 
       </div>    
     </div>
   </div>
@@ -100,11 +100,12 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
 <!-- Token display Fragment -->
 <div id="tokensDisplay" class="w3-container" style="display:none">
   <br>
-  <h4><i class="fa fa-id-card-o w3-animate-top"></i> <span id="tokenTitle"></span></h4>
+  <h><i class="fa fa-id-card-o w3-animate-top"></i> <span id="tokenTitle"></span></h4>
   <h6 class="w3-opacity"><i class="fa fa-clock-o "></i> <span id="tokenLastSaved"></span></h6>
   <hr>
   <div class="grid-container token-input" id="tokenInput">
     <div class="grid-child token-box-wrapper">
+      <h6>Enter token below (it never leaves the browser):</h6>
       <div class="token-box" contenteditable="true" oninput="onTokenChange()" id="rawToken"></div>
       <div class="token-message" id="tokenMessage"></div>
       <a class="w3-button w3-light-grey input-button" href="#">Delete<i class="w3-margin-left fa fa-trash"></i></a>
