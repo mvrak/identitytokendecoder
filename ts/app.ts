@@ -33,3 +33,7 @@ function displayToken(tokenId: string) {
 function displayKey(keyId: string) {
   model.displayKey(keyId);
 }
+
+function openTab(tabName: string) {
+  model.openTab(tabName);
+}

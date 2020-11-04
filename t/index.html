@@ -16,7 +16,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
 
 <!-- Side Navigation -->
 <nav class="w3-sidebar w3-bar-block w3-collapse w3-white w3-animate-left w3-card" style="z-index:3;width:320px;" id="mySidebar">
-  <a href="javascript:void(0)" class="w3-bar-item w3-button w3-border-bottom w3-large">Identity Token Decoder</a>
+  <a href="/" class="w3-bar-item w3-button w3-border-bottom w3-large">Identity Token Decoder</a>
   <a href="javascript:void(0)" onclick="w3_close()" title="Close Sidemenu" 
   class="w3-bar-item w3-button w3-hide-large w3-large">Close <i class="fa fa-remove"></i></a>
   <a href="javascript:void(0)" class="w3-bar-item w3-button w3-dark-grey w3-button w3-hover-black w3-left-align" onclick="document.getElementById('newPayload').style.display='block'">New Payload <i class="w3-padding fa fa-pencil"></i></a>
@@ -97,9 +97,72 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
 <i class="fa fa-bars w3-button w3-white w3-hide-large w3-xlarge w3-margin-left w3-margin-top" onclick="w3_open()"></i>
 <a href="javascript:void(0)" class="w3-hide-large w3-red w3-button w3-right w3-margin-top w3-margin-right" onclick="document.getElementById('newPayload').style.display='block'"><i class="fa fa-pencil"></i></a>
 
-<!-- Payload display Fragment -->
-<div id="tokenDisplay" class="w3-container"></div>
+<!-- Token display Fragment -->
+<div id="tokensDisplay" class="w3-container" style="display:none">
+  <br>
+  <h4><i class="fa fa-id-card-o w3-animate-top"></i> <span id="tokenTitle"></span></h4>
+  <h6 class="w3-opacity"><i class="fa fa-clock-o "></i> <span id="tokenLastSaved"></span></h6>
+  <hr>
+  <div class="grid-container token-input" id="tokenInput">
+    <div class="grid-child token-box-wrapper">
+      <div class="token-box" contenteditable="true" oninput="onTokenChange()" id="rawToken"></div>
+      <div class="token-message" id="tokenMessage"></div>
+      <a class="w3-button w3-light-grey input-button" href="#">Delete<i class="w3-margin-left fa fa-trash"></i></a>
+      <a class="w3-button w3-light-grey input-button" href="#">Discard<i class="w3-margin-left fa fa-times"></i></a>
+      <a class="w3-button w3-light-grey input-button" href="#">Save<i class="w3-margin-left fa fa-save"></i></a>
+    </div>
+    <div class="grid-child settings">
+      <div class="tab">
+        <button class="tablinks" onclick="openTab('verify')" id="verify-btn">Verify</button>
+        <button class="tablinks" onclick="openTab('generate')" id="generate-btn">Generate</button>
+        <button class="tablinks" onclick="openTab('decrypt')" id="decrypt-btn">Decrypt</button>
+        <button class="tablinks" onclick="openTab('encrypt')" id="encrypt-btn">Encrypt</button>
+      </div>
+      <!-- Tab content -->
+      <div id="verify" class="tabcontent">
+        <h3>Verify Token</h3>
+        <p>Verify if token has a valid signature</p>
+      </div>
+
+      <div id="generate" class="tabcontent">
+        <h3>Generate Token</h3>
+        <p>Geneate a new token</p>
+      </div>
+
+      <div id="decrypt" class="tabcontent">
+        <h3>Decrypt Token</h3>
+        <p>Decrypt and encrypted token</p>
+      </div>
+
+      <div id="encrypt" class="tabcontent">
+        <h3>Encrypt Token</h3>
+        <p>Encrypt a token</p>
+      </div>
+    </div>
+  </div>
+  <div class="grid-container token-details" id="tokenDetails">
+    <div class="grid-child decoded-token" id="decodedToken"></div>
+    <div class="grid-child claims-table" id="claimsTable">
+      <table class="w3-table-all">
+        <tr>
+          <th width="20%">Claim type</th>
+          <th width="30%">Value</th>
+          <th width="50%">Notes</th>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
 <!-- Fragment End --> 
+
+<!-- Secret display Fragment -->
+<div id="secretsDisplay" class="w3-container" style="display:none">
+  <br>
+  <h4><i class="fa fa-id-card-o w3-animate-top"></i> <span id="secretTitle"></span></h4>
+  <h6 class="w3-opacity"><i class="fa fa-clock-o "></i> <span id="secretLastSaved"></span></h6>
+  <hr>
+</div>
+<!-- Fragment End -->
 </div>
 
 <script src="ts/claims.js"></script>
