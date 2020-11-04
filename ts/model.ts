@@ -54,7 +54,7 @@ class Model {
     this._renderKeys();
     this._renderTokens();
 
-    this.displayToken("")
+    this.displayToken("token1")
   }
 
   public displayToken(tokenId: string) {
@@ -72,7 +72,8 @@ class Model {
     } else {
       document.getElementById("tokenTitle").innerHTML = "New Token";
       document.getElementById("tokenLastSaved").innerHTML = "Unsaved"
-      document.getElementById("tokenMessage").innerHTML = "Enter token above (it never leaves the browser)";
+      document.getElementById("rawToken").innerHTML = "";
+      this._renderTokenDetails("");
     }
 
     this.openTab(this._settingsTab);
@@ -94,8 +95,6 @@ class Model {
     if (tokenString.textContent.length > 0) {
       tokenString.innerHTML = this._displayColorCodedToken(tokenString.textContent);
       this._renderTokenDetails(tokenString.textContent);
-    } else {
-      document.getElementById("tokenMessage").innerHTML = "Enter token above (it never leaves the browser)";
     }
   }
 
@@ -134,19 +133,31 @@ class Model {
     const decodedToken = document.getElementById("decodedToken");
     const tokenMessage = document.getElementById("tokenMessage");
     const claimsTable = document.getElementById("claimsTable");
-    try {
-      const jwt = new JWT(rawToken);
-      decodedToken.innerHTML = this._displayDecodedToken(jwt);
-      claimsTable.innerHTML = this._displayClaimsTable(jwt);
-
-      const issuer = getIssuerDetails(jwt.payload["iss"]);
-      if (!!issuer) {
-        tokenMessage.innerHTML = issuingProviderDescriptions[issuer];
-      } else {
-        tokenMessage.innerHTML = "&nbsp;";
+    if (!!rawToken) {
+      try {
+        const jwt = new JWT(rawToken);
+        decodedToken.innerHTML = this._displayDecodedToken(jwt);
+        claimsTable.innerHTML = this._displayClaimsTable(jwt);
+  
+        const issuer = getIssuerDetails(jwt.payload["iss"]);
+        if (!!issuer) {
+          tokenMessage.innerHTML = issuingProviderDescriptions[issuer];
+        } else {
+          tokenMessage.innerHTML = "";
+        }
+      } catch (e) {
+        tokenMessage.innerHTML = `<span class="w3-text-red">${e.message}</span>`;
       }
-    } catch (e) {
-      tokenMessage.innerHTML = `<span class="w3-text-red">${e.message}</span>`;
+    } else {
+      decodedToken.innerHTML = "";
+      claimsTable.innerHTML = `<table class="w3-table-all">
+      <tr>
+        <th width="20%">Claim type</th>
+        <th width="30%">Value</th>
+        <th width="50%">Notes</th>
+      </tr>
+      </table>`;
+      tokenMessage.innerHTML = "Enter token above (it never leaves the browser)";
     }
   }
 
