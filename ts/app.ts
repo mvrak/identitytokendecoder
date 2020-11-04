@@ -26,6 +26,10 @@ function onTokenChange() {
   model.onTokenChange();
 }
 
+function onSecretChange() {
+  model.onSecretChange();
+}
+
 function displayToken(tokenId: string) {
   model.displayToken(tokenId);
 }
@@ -36,4 +40,46 @@ function displaySecret(keyId: string) {
 
 function openTab(tabName: string) {
   model.openTab(tabName);
+}
+
+function newToken() {
+  model.newToken();
+}
+
+function newSecret() {
+  model.newSecret();
+}
+
+function onTokenSave() {
+  model.onTokenSave();
+}
+
+function onTokenDiscard() {
+  model.onTokenDiscard();
+}
+
+function onTokenDelete() {
+  model.onTokenDelete();
+}
+
+function onSecretSave() {
+  model.onSecretSave();
+}
+
+function onSecretDiscard() {
+  model.onSecretDiscard();
+}
+
+function onSecretDelete() {
+  model.onSecretDelete();
+}
+
+function onSecretUpload() {
+}
+
+function onSecretFetch() {
+}
+
+function purgeAll() {
+  model.purgeAll();
 }

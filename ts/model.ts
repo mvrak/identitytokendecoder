@@ -16,36 +16,29 @@ class Model {
     "w3-text-lime"
   ];
 
-  private static readonly LocalStorageKey: string = "decoderidentitytokens"; 
-
   private _tokens: TokenModel[];
   private _secrets: Secret[];
 
+  private _current: TokenModel | Secret;
+
   private _settingsTab: string;
 
+  private _storage: StorageHelper;
+
   constructor() {
+    this._storage = new StorageHelper();
+
+    // TODO: Do token retrieval from local storage
+    // const storedValues = this._storage.retrieveAll();
+    // [this._tokens, this._secrets] = storedValues[0];
+
     this._tokens = [
-      {
-        id: "token1",
-        title: "Sample Token",
-        saved: new Date("1 November, 2020"),
-        rawToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3ODZlZmY0OS00OWQ2LTQ4YjQtODM4NC0yYTA5NDYxODJmN2YiLCJ2YWxpZCI6IjEiLCJ1c2VyaWQiOiIxIiwibmFtZSI6ImJpbGFsIiwiZXhwIjoxNTcwNjMwMzMwLCJpc3MiOiJodHRwOi8vbXlzaXRlLmNvbSIsImF1ZCI6Imh0dHA6Ly9teXNpdGUuY29tIn0.06vzYfiSpj1X9s0-CL2nE7NH4LloASMikZCNfHIJ8tY"
-      },
-      {
-        id: "token2",
-        title: "Sample Token 2",
-        saved: new Date("1 November, 2020"),
-        rawToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-      }
+      new TokenModel("token1", "Sample Token", new Date("1 November, 2020"), "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3ODZlZmY0OS00OWQ2LTQ4YjQtODM4NC0yYTA5NDYxODJmN2YiLCJ2YWxpZCI6IjEiLCJ1c2VyaWQiOiIxIiwibmFtZSI6ImJpbGFsIiwiZXhwIjoxNTcwNjMwMzMwLCJpc3MiOiJodHRwOi8vbXlzaXRlLmNvbSIsImF1ZCI6Imh0dHA6Ly9teXNpdGUuY29tIn0.06vzYfiSpj1X9s0-CL2nE7NH4LloASMikZCNfHIJ8tY"),
+      new TokenModel("token2", "Sample Token 2", new Date("1 November, 2020"), "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c")
     ];
     
     this._secrets = [
-      {
-        id: "secret1",
-        title: "Sample Key",
-        saved: new Date("1 November, 2020"),
-        publicKey: "IUzI1NiIsInR5cCI6IkpXVCJ9"
-      }
+      new Secret("secret1", "Sample Key", new Date("1 November, 2020"), "IUzI1NiIsInR5cCI6IkpXVCJ9")
     ];
 
     this._settingsTab = "verify";
@@ -54,57 +47,172 @@ class Model {
     this._renderTokens();
     this._renderSecrets();
 
-    this.displayToken("token1")
+    this.displayToken("token1");
   }
 
   public displayToken(tokenId: string) {
     this._highlightMenuItem(tokenId);
     let token = this._tokens.filter((token) => token.id === tokenId)[0];
-
+    this._current = token;
+    
     document.getElementById("tokensDisplay").style.display = "block";
     document.getElementById("secretsDisplay").style.display = "none";
-
-    if (!!token) {
-      document.getElementById("tokenTitle").innerHTML = token.title;
-      document.getElementById("tokenLastSaved").innerHTML = `Last saved ${token.saved.toLocaleString()}`;
-      document.getElementById("rawToken").innerHTML = this._displayColorCodedToken(token.rawToken);
-      this._renderTokenDetails(token.rawToken);
-    } else {
-      document.getElementById("tokenTitle").innerHTML = "New Token";
-      document.getElementById("tokenLastSaved").innerHTML = "Unsaved";
-      document.getElementById("rawToken").innerHTML = "";
-      this._renderTokenDetails("");
-    }
-
+    
+    document.getElementById("tokenTitle").innerHTML = token.dirtyTitle();
+    document.getElementById("tokenLastSaved").innerHTML = displayDate(token.saved);
+    document.getElementById("rawToken").innerHTML = this._displayColorCodedToken(token.rawToken);
+    this._renderTokenDetails(token?.rawToken);
+    
     this.openTab(this._settingsTab);
-  }
 
+    this._enableTokenButtons(token);
+  }
+  
   public displaySecret(secretId: string) {
     this._highlightMenuItem(secretId);
     let secret = this._secrets.filter((secret) => secret.id === secretId)[0];
-
+    this._current = secret;
+    
     document.getElementById("tokensDisplay").style.display = "none";
     document.getElementById("secretsDisplay").style.display = "block";
 
-    if (!!secret) {
-      document.getElementById("secretTitle").innerHTML = secret.title;
-      document.getElementById("secretLastSaved").innerHTML = `Last saved ${secret.saved.toLocaleString()}`;
-      document.getElementById("publicKey").innerHTML = secret.publicKey;
-      document.getElementById("privateKey").innerHTML = secret.privateKey ?? "";
-    } else {
-      document.getElementById("secretTitle").innerHTML = "New Secret";
-      document.getElementById("secretLastSaved").innerHTML = "Unsaved";
-      document.getElementById("publicKey").innerHTML = "";
-      document.getElementById("privateKey").innerHTML = "";
-    }
+    document.getElementById("secretTitle").innerHTML = secret.dirtyTitle();
+    document.getElementById("secretLastSaved").innerHTML = displayDate(secret.saved);
+    document.getElementById("publicKey").innerHTML = secret.publicKey ?? "";
+    document.getElementById("privateKey").innerHTML = secret.privateKey ?? "";
+
+    // Enable/disable buttons
+    this._enableSecretButtons(secret);
   }
   
+  public newToken() {
+    const id = this._getNewTokenId();
+    const newToken = new TokenModel(id, "New Token");
+    this._tokens.push(newToken);
+    this._renderNewToken(newToken);
+    this.displayToken(id);
+  }
+
+  public newSecret() {
+    const id = this._getNewSecretId();
+    const newSecret = new Secret(id, "New Secret");
+    this._secrets.push(newSecret);
+    this._renderNewSecret(newSecret);
+    this.displaySecret(id);
+  }
+
   public onTokenChange() {
-    const tokenString =  document.getElementById("rawToken");
-    if (tokenString.textContent.length > 0) {
-      tokenString.innerHTML = this._displayColorCodedToken(tokenString.textContent);
-      this._renderTokenDetails(tokenString.textContent);
+    const rawTokenDiv = document.getElementById("rawToken");
+    const tokenString = rawTokenDiv.textContent;
+
+    const currentToken = this._current as TokenModel;
+    currentToken.rawToken = tokenString;
+
+    document.getElementById("tokenTitle").innerHTML = currentToken.dirtyTitle();
+    rawTokenDiv.innerHTML = this._displayColorCodedToken(tokenString);
+    this._renderTokenDetails(tokenString);
+    this._reRenderToken(currentToken);
+    
+    // Enable/disable buttons
+    this._enableTokenButtons(currentToken);
+  }
+
+  public onSecretChange() {
+    const publicKeyDiv = document.getElementById("publicKey");
+    const privateKeyDiv = document.getElementById("privateKey");
+    
+    const publicKey = publicKeyDiv.textContent;
+    const privateKey = privateKeyDiv.textContent;
+
+    const currentSecret = this._current as Secret;
+    currentSecret.publicKey = publicKey;
+    currentSecret.privateKey = privateKey;
+
+    document.getElementById("secretTitle").innerHTML = currentSecret.dirtyTitle();
+    this._reRenderSecret(currentSecret);
+
+    // Enable/disable buttons
+    this._enableSecretButtons(currentSecret);
+  }
+
+  public onTokenSave() {
+    const currentToken = this._current as TokenModel;
+    currentToken.save();
+
+    this._storage.saveToken(currentToken);
+
+    this._onSaveDiscardToken(currentToken);
+    this._enableTokenButtons(currentToken);
+  }
+  
+  public onTokenDiscard() {
+    const currentToken = this._current as TokenModel;
+    currentToken.discard();
+    
+    this._onSaveDiscardToken(currentToken);
+    this._enableTokenButtons(currentToken);
+  }
+  
+  public onTokenDelete() {
+    const currentToken = this._current as TokenModel;
+    
+    let index = this._tokens.indexOf(currentToken);
+    this._tokens.splice(index, 1);
+    
+    this._renderTokens();
+    if (this._tokens.length > 0) {
+      if (index >= this._tokens.length) {
+        index = this._tokens.length - 1;
+      }
+      this.displayToken(this._tokens[index].id);
+    } else {
+      this.newToken();
     }
+  }
+
+  public onSecretSave() {
+    const currentSecret = this._current as Secret;
+    currentSecret.save();
+
+    this._storage.saveSecret(currentSecret);
+
+    this._onSaveDiscardSecret(currentSecret);
+    this._enableSecretButtons(currentSecret);
+  }
+  
+  public onSecretDiscard() {
+    const currentSecret = this._current as Secret;
+    currentSecret.discard();
+
+    this._onSaveDiscardSecret(currentSecret);
+    this._enableSecretButtons(currentSecret);
+  }
+  
+  public onSecretDelete() {
+    const currentSecret = this._current as Secret;
+    
+    let index = this._secrets.indexOf(currentSecret);
+    this._secrets.splice(index, 1);
+    
+    this._renderSecrets();
+    if (this._secrets.length > 0) {
+      if (index >= this._secrets.length) {
+        index = this._secrets.length - 1;
+      }
+      this.displaySecret(this._secrets[index].id);
+    } else {
+      this.newSecret();
+    }
+  }
+
+  public purgeAll() {
+    this._tokens = [];
+    this._secrets = [];
+    this._settingsTab = "Verify";
+    this._storage.purgeLocalStorage();
+    this._renderTokens();
+    this._renderSecrets();
+    this.newToken();
   }
 
   public openTab(tabName: string) {
@@ -205,34 +313,84 @@ class Model {
     return item;
   }
 
-  private _renderTokens() {
-    let tokensDiv = document.getElementById("tokens");
+  private _renderToken(token: TokenModel): string {
+    return `<a href="javascript:void(0)" class="w3-bar-item w3-button w3-border-bottom menu w3-hover-light-grey" onclick="displayToken('${token.id}');w3_close();" id="${token.id}">
+    ${this._renderTokenInner(token)}
+    </a>`; 
+  }
   
+  private _renderSecret(secret: Secret): string {
+    return `<a href="javascript:void(0)" class="w3-bar-item w3-button w3-border-bottom menu w3-hover-light-grey" onclick="displaySecret('${secret.id}');w3_close();" id="${secret.id}">
+    ${this._renderSecretInner(secret)}
+    </a>`;
+  }
+
+  private _renderTokenInner(token: TokenModel): string {
+    return `<div class="w3-container">
+      <i class="w3-margin-right fa fa-id-card-o"></i><span class="w3-opacity w3-large">${token.dirtyTitle()}</span>
+      <h6 class="w3-opacity">${displayDateMenu(token.saved)}</h6>
+      <p>${this._displayColorCodedToken(this._truncate(token.rawToken))}</p>
+    </div>`; 
+  }
+  
+  private _renderSecretInner(secret: Secret): string {
+    return `<div class="w3-container">
+      <i class="w3-margin-right fa fa-id-card-o"></i><span class="w3-opacity w3-large">${secret.dirtyTitle()}</span>
+      <h6 class="w3-opacity">${displayDateMenu(secret.saved)}</h6>
+      <p>${secret.publicKey}</p>
+    </div>`;
+  }
+
+  private _renderTokens() {
+    const tokensDiv = document.getElementById("tokens");
+    tokensDiv.innerHTML = "";
+
     this._tokens.forEach(token => {
-      tokensDiv.innerHTML +=
-      `<a href="javascript:void(0)" class="w3-bar-item w3-button w3-border-bottom menu w3-hover-light-grey" onclick="displayToken('${token.id}');w3_close();" id="${token.id}">
-      <div class="w3-container">
-        <i class="w3-margin-right fa fa-id-card-o w3-animate-top"></i><span class="w3-opacity w3-large">${token.title}</span>
-        <h6 class="w3-opacity">${token.saved.toLocaleString()}</h6>
-        <p>${this._displayColorCodedToken(this._truncate(token.rawToken))}</p>
-      </div>
-      </a>`
+      tokensDiv.innerHTML += this._renderToken(token);
     }); 
   }
   
   private _renderSecrets() {
-    let secretsDiv = document.getElementById("secrets");
-    
+    const secretsDiv = document.getElementById("secrets");
+    secretsDiv.innerHTML = "";
+
     this._secrets.forEach(secret => {
-      secretsDiv.innerHTML +=
-      `<a href="javascript:void(0)" class="w3-bar-item w3-button w3-border-bottom menu w3-hover-light-grey" onclick="displaySecret('${secret.id}');w3_close();" id="${secret.id}">
-      <div class="w3-container">
-        <i class="w3-margin-right fa fa-id-card-o w3-animate-top"></i><span class="w3-opacity w3-large">${secret.title}</span>
-        <h6 class="w3-opacity">${secret.saved.toLocaleString()}</h6>
-        <p>${secret.publicKey}</p>
-      </div>
-      </a>`
+      secretsDiv.innerHTML += this._renderSecret(secret);
     });
+  }
+
+  private _renderNewToken(token: TokenModel) {
+    const tokensDiv = document.getElementById("tokens");
+    tokensDiv.innerHTML += this._renderToken(token);
+  }
+  
+  private _renderNewSecret(secret: Secret) {
+    const secretsDiv = document.getElementById("secrets");
+    secretsDiv.innerHTML += this._renderSecret(secret);
+  }
+
+  private _reRenderToken(token: TokenModel) {
+    document.getElementById(token.id).innerHTML = this._renderTokenInner(token);
+  }
+
+  private _reRenderSecret(secret: Secret) {
+    document.getElementById(secret.id).innerHTML = this._renderSecretInner(secret);
+  }
+
+  private _onSaveDiscardToken(token: TokenModel) {
+    document.getElementById("tokenTitle").innerHTML = token.dirtyTitle();
+    document.getElementById("tokenLastSaved").innerHTML = displayDate(token.saved);
+    document.getElementById("rawToken").innerHTML = this._displayColorCodedToken(token.rawToken);
+    this._reRenderToken(token);
+    this._renderTokenDetails(token.rawToken);
+  }
+
+  private _onSaveDiscardSecret(secret: Secret) {
+    document.getElementById("secretTitle").innerHTML = secret.dirtyTitle();
+    document.getElementById("tokenLastSaved").innerHTML = displayDate(secret.saved);
+    document.getElementById("publicKey").innerHTML = secret.publicKey ?? "";
+    document.getElementById("privateKey").innerHTML = secret.privateKey ?? "";
+    this._reRenderSecret(secret);
   }
 
   private _displayColorCodedToken(rawToken: string): string {
@@ -244,17 +402,51 @@ class Model {
     return coloredstring.slice(0, -1);
   }
 
-  private _purgeAll(){
-    this._purgeDisplay();
-    this._purgeLocalStorage();
-  }
-  
-  private _purgeDisplay() {
-    //tbd
+  private _getNewTokenId(): string {
+    let i = 1;
+    while (true) {
+      const id = `token${i}`;
+      if (!!!this._tokens.find(token => token.id === id)) {
+        return id;
+      }
+      i++;
+    }
   }
 
-  private _purgeLocalStorage() {
-    //tbd
-    localStorage.removeItem(Model.LocalStorageKey);
+  private _getNewSecretId(): string {
+    let i = 1;
+    while (true) {
+      const id = `secret${i}`;
+      if (!!!this._secrets.find(secret => secret.id === id)) {
+        return id;
+      }
+      i++;
+    }
+  }
+
+  private _enableTokenButtons(token: TokenModel) {
+    const dirty = token.isDirty();
+    const notEmpty = !!token.saved || token.rawToken.length > 0;
+    this._enableButton("tokenSave", dirty);
+    this._enableButton("tokenDiscard", dirty && notEmpty);
+    this._enableButton("tokenDelete", notEmpty || this._tokens.length > 1);
+  }
+
+  private _enableSecretButtons(secret: Secret) {
+    const dirty = secret.isDirty();
+    const notEmpty = !!secret.saved || secret.publicKey.length > 0 || secret.privateKey.length > 0;
+    this._enableButton("secretSave", dirty);
+    this._enableButton("secretDiscard", dirty && notEmpty);
+    this._enableButton("secretDelete", notEmpty || this._secrets.length > 1);
+  }
+
+  private _enableButton(id: string, enable: boolean) {
+    let x = document.getElementById(id);
+    if (enable) {
+      // Remove w3-disabled
+      x.className = x.className.replace(" w3-disabled", "");
+    } else if (x.className.indexOf("w3-disabled") === -1) { 
+      x.className += " w3-disabled";
+    }
   }
 }
