@@ -16,17 +16,16 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
 
 <!-- Side Navigation -->
 <nav class="w3-sidebar w3-bar-block w3-collapse w3-white w3-animate-left w3-card" style="z-index:3;width:320px;" id="mySidebar">
-  <a href="/" class="w3-bar-item w3-button w3-border-bottom w3-large">Identity Token Decoder</a>
-  <a href="javascript:void(0)" onclick="w3_close()" title="Close Sidemenu" 
-  class="w3-bar-item w3-button w3-hide-large w3-large">Close <i class="fa fa-remove"></i></a>
-  <a href="javascript:void(0)" class="w3-bar-item w3-button w3-dark-grey w3-button w3-hover-black w3-left-align" onclick="newToken()">New Token <i class="w3-padding fa fa-pencil"></i></a>
-  <a href="javascript:void(0)" class="w3-bar-item w3-button w3-dark-grey w3-button w3-hover-black w3-left-align" onclick="newSecret()">New Secret <i class="w3-padding fa fa-pencil"></i></a>
-  <a id="tokensBtn" onclick="expandMenu('tokens')" href="javascript:void(0)" class="w3-bar-item w3-button"><i class="fa fa-inbox w3-margin-right"></i>Tokens<i class="fa fa-caret-down w3-margin-left"></i></a>
-  <div id="tokens" class="w3-hide w3-animate-left"></div>
-  <a id="secretsBtn" onclick="expandMenu('secrets')" href="javascript:void(0)" class="w3-bar-item w3-button"><i class="fa fa-key w3-margin-right"></i>Secrets<i class="fa fa-caret-down w3-margin-left"></i></a>
-  <div id="secrets" class="w3-hide w3-animate-left"></div>
-  <a href="#" onclick="document.getElementById('purgeModal').style.display='block'" class="w3-bar-item w3-button"><i class="fa fa-trash w3-margin-right"></i>Forget all data</a>
-  </nav>
+<a href="/" class="w3-bar-item w3-button w3-border-bottom w3-large">Identity Token Decoder</a>
+<a href="javascript:void(0)" id="closeSideMenu" title="Close Sidemenu" class="w3-bar-item w3-button w3-hide-large w3-large">Close <i class="fa fa-remove"></i></a>
+<a href="javascript:void(0)" class="w3-bar-item w3-button w3-dark-grey w3-button w3-hover-black w3-left-align" id="newToken">New Token <i class="w3-padding fa fa-pencil"></i></a>
+<a href="javascript:void(0)" class="w3-bar-item w3-button w3-dark-grey w3-button w3-hover-black w3-left-align" id="newSecret">New Secret <i class="w3-padding fa fa-pencil"></i></a>
+<a id="tokensBtn" href="javascript:void(0)" class="w3-bar-item w3-button"><i class="fa fa-inbox w3-margin-right"></i>Tokens<i class="fa fa-caret-down w3-margin-left"></i></a>
+<div id="tokens" class="w3-hide w3-animate-left"></div>
+<a id="secretsBtn" href="javascript:void(0)" class="w3-bar-item w3-button"><i class="fa fa-key w3-margin-right"></i>Secrets<i class="fa fa-caret-down w3-margin-left"></i></a>
+<div id="secrets" class="w3-hide w3-animate-left"></div>
+<a href="#" onclick="document.getElementById('purgeModal').style.display='block'" class="w3-bar-item w3-button"><i class="fa fa-trash w3-margin-right"></i>Forget all data</a>
+</nav>
 
 <!-- Purging Modal -->
 <div id="purgeModal" class="w3-modal">
@@ -36,19 +35,19 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
       class="w3-button w3-display-topright">&times;</span>
       <h3>Forget all data and clear local storage?</h3>
       <div class="w3-section">
-        <a class="w3-button w3-red" onclick="document.getElementById('purgeModal').style.display='none';purgeAll();">Forget All <i class="w3-margin-left fa fa-remove"></i></a>
-        <a class="w3-button w3-green w3-right" onclick="document.getElementById('purgeModal').style.display='none';">Cancel <i class="w3-margin-left fa fa-save"></i></a> 
+        <a class="w3-button w3-red" onclick="document.getElementById('purgeModal').style.display='none'" id="confirmPurge">Forget All <i class="w3-margin-left fa fa-remove"></i></a>
+        <a class="w3-button w3-green w3-right" onclick="document.getElementById('purgeModal').style.display='none'">Cancel <i class="w3-margin-left fa fa-save"></i></a> 
       </div>
     </div>
   </div>
 </div>
 
 <!-- Overlay effect when opening the side navigation on small screens -->
-<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" title="Close Sidemenu" id="myOverlay"></div>
+<div class="w3-overlay w3-hide-large w3-animate-opacity" id="closeSideMenuOverlay" style="cursor:pointer" title="Close Sidemenu" id="myOverlay"></div>
 
 <!-- Page content -->
 <div class="w3-main" style="margin-left:320px;">
-<i class="fa fa-bars w3-button w3-white w3-hide-large w3-xlarge w3-margin-left w3-margin-top" onclick="w3_open()"></i>
+<i class="fa fa-bars w3-button w3-white w3-hide-large w3-xlarge w3-margin-left w3-margin-top" id="openSideMenu"></i>
 <a href="javascript:void(0)" class="w3-hide-large w3-red w3-button w3-right w3-margin-top w3-margin-right" onclick="document.getElementById('newPayload').style.display='block'"><i class="fa fa-pencil"></i></a>
 
 <!-- Token display Fragment -->
@@ -60,18 +59,18 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
   <div class="grid-container token-input" id="tokenInput">
     <div class="grid-child">
       <h6 style="float:left">Enter token below (it never leaves the browser):</h6>
-      <a class="w3-button w3-light-grey token-button" href="#" id="tokenDelete" onClick="onTokenDelete()">Delete<i class="w3-margin-left fa fa-trash"></i></a>
-      <a class="w3-button w3-light-grey token-button" href="#" id="tokenDiscard" onClick="onTokenDiscard()">Discard<i class="w3-margin-left fa fa-times"></i></a>
-      <a class="w3-button w3-light-grey token-button" href="#" id="tokenSave" onClick="onTokenSave()">Save<i class="w3-margin-left fa fa-save"></i></a>
-      <div class="token-box input-box" contenteditable="true" oninput="onTokenChange()" id="rawToken"></div>
+      <a class="w3-button w3-light-grey token-button" href="#" id="tokenDelete">Delete<i class="w3-margin-left fa fa-trash"></i></a>
+      <a class="w3-button w3-light-grey token-button" href="#" id="tokenDiscard">Discard<i class="w3-margin-left fa fa-times"></i></a>
+      <a class="w3-button w3-light-grey token-button" href="#" id="tokenSave">Save<i class="w3-margin-left fa fa-save"></i></a>
+      <div class="token-box input-box" contenteditable="true" id="rawToken"></div>
       <div class="token-message" id="tokenMessage"></div>
     </div>
     <div class="grid-child settings">
       <div class="tab">
-        <button class="tablinks" onclick="openTab('verify')" id="verify-btn">Verify</button>
-        <button class="tablinks" onclick="openTab('generate')" id="generate-btn">Generate</button>
-        <button class="tablinks" onclick="openTab('decrypt')" id="decrypt-btn">Decrypt</button>
-        <button class="tablinks" onclick="openTab('encrypt')" id="encrypt-btn">Encrypt</button>
+        <button class="tablinks" id="verify-btn">Verify</button>
+        <button class="tablinks" id="generate-btn">Generate</button>
+        <button class="tablinks" id="decrypt-btn">Decrypt</button>
+        <button class="tablinks" id="encrypt-btn">Encrypt</button>
       </div>
       <!-- Tab content -->
       <div id="verify" class="tabcontent">
@@ -118,18 +117,18 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
   <hr>
   <div class="secret-display">
     <div class="secret-buttons">
-      <a class="w3-button w3-light-grey secret-button-left" href="#" id="secretFetch" onClick="onSecretFetch()">Fetch<i class="w3-margin-left fa fa-arrow-circle-down"></i></a>
-      <a class="w3-button w3-light-grey secret-button-left" href="#" id="secretUpload" onClick="onSecretUpload()">Upload<i class="w3-margin-left fa fa-upload"></i></a>
-      <a class="w3-button w3-light-grey secret-button-right" href="#" id="secretDelete" onClick="onSecretDelete()">Delete<i class="w3-margin-left fa fa-trash"></i></a>
-      <a class="w3-button w3-light-grey secret-button-right" href="#" id="secretDiscard" onClick="onSecretDiscard()">Discard<i class="w3-margin-left fa fa-times"></i></a>
-      <a class="w3-button w3-light-grey secret-button-right" href="#" id="secretSave" onClick="onSecretSave()">Save<i class="w3-margin-left fa fa-save"></i></a>
+      <a class="w3-button w3-light-grey secret-button-left" href="#" id="secretFetch">Fetch<i class="w3-margin-left fa fa-arrow-circle-down"></i></a>
+      <a class="w3-button w3-light-grey secret-button-left" href="#" id="secretUpload">Upload<i class="w3-margin-left fa fa-upload"></i></a>
+      <a class="w3-button w3-light-grey secret-button-right" href="#" id="secretDelete">Delete<i class="w3-margin-left fa fa-trash"></i></a>
+      <a class="w3-button w3-light-grey secret-button-right" href="#" id="secretDiscard">Discard<i class="w3-margin-left fa fa-times"></i></a>
+      <a class="w3-button w3-light-grey secret-button-right" href="#" id="secretSave">Save<i class="w3-margin-left fa fa-save"></i></a>
     </div>
 
     <div class="secret-input">
       <h6 class="secret-label">Public key (used for verification and encryption):</h6>
-      <div class="secret-box input-box" contenteditable="true" oninput="onSecretChange()" id="publicKey"></div>
+      <div class="secret-box input-box" contenteditable="true" id="publicKey"></div>
       <h6 class="secret-label">Private key (used for generation and decryption):</h6>
-      <div class="secret-box input-box" contenteditable="true" oninput="onSecretChange()" id="privateKey"></div>
+      <div class="secret-box input-box" contenteditable="true" id="privateKey"></div>
     </div>
     <div class="secret-details">
     </div>
@@ -138,15 +137,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
 <!-- Fragment End -->
 </div>
 
-<script src="ts/claims.js"></script>
-<script src="ts/model.js"></script>
-<script src="ts/secret.js"></script>
-<script src="ts/storageHelper.js"></script>
-<script src="ts/token.js"></script>
-<script src="ts/tokenModel.js"></script>
-<script src="ts/utils.js"></script>
-
-<script src="ts/app.js"></script>
+<script src="ts/bundle.js"></script>
 
 </body>
 </html> 

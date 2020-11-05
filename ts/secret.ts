@@ -1,4 +1,6 @@
-class Secret {
+import { Token } from "./token";
+
+export class Secret {
   public id: string;
   public title: string;
   public saved?: Date;

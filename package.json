@@ -5,7 +5,7 @@
   "main": "index.js",
   "private": false,
   "scripts": {
-    "start": "tsc && concurrently \"tsc -w\" \"node index.js\"",
+    "start": "tsc && concurrently \"tsc -w\" \"watchify s/ts/main.js -o s/ts/bundle.js\" \"node index.js\"",
     "build:package": "cd ../../../lib/msal-common && npm run build && cd ../msal-node && npm run build",
     "start:build": "npm run build:package && npm start"
   },
@@ -13,10 +13,14 @@
   "license": "MIT",
   "dependencies": {
     "@azure/msal-node": "^1.0.0-alpha.9",
+    "browserify": "^17.0.0",
     "concurrently": "^5.3.0",
     "express": "^4.17.1",
     "mustache": "^4.0.1",
-    "uuid": "^8.3.1"
+    "node-jose": "^2.0.0",
+    "tsify": "^5.0.2",
+    "uuid": "^8.3.1",
+    "watchify": "^3.11.1"
   },
   "devDependencies": {
     "ts-loader": "^8.0.7",

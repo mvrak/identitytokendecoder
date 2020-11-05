@@ -1,4 +1,7 @@
-class StorageHelper {
+import { Secret } from "./secret";
+import { TokenModel } from "./tokenModel";
+
+export class StorageHelper {
   private static readonly LocalStorageKey: string = "decoderidentitytokens"; 
 
   constructor() {

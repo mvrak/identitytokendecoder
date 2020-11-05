@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "moduleResolution": "Node",
     "target": "es2015",
     "outDir": "s/ts",
     "sourceMap": true

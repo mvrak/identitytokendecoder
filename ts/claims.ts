@@ -1,3 +1,5 @@
+import * as Utils from "./utils";
+
 const b2cPolicyPrefix = 'b2c_1_';
 const iefPolicyPrefix = 'b2c_1a_';
 const iss = 'iss';
@@ -8,7 +10,7 @@ const encodedTokenId = '#encodedToken';
 const claimsTabTBody = '#claimsTabTBody';
 const issuingProviderDescriptionId = '#issuingProviderDescription';
 
-const issuingProviderDescriptions = {
+export const issuingProviderDescriptions = {
   'aad': 'This token was issued by <a href="https://docs.microsoft.com/en-us/azure/active-directory/develop/active-directory-token-and-claims">Azure Active Directory</a>.',
   'b2c': 'This token was issued by <a href="https://docs.microsoft.com/en-us/azure/active-directory-b2c/active-directory-b2c-reference-tokens">Azure AD B2C</a>.',
   'ief': 'This token was issued using an <a href="https://azure.microsoft.com/en-us/resources/samples/active-directory-b2c-advanced-policies/">custom policy by Identity Experience Framework</a>.',
@@ -16,7 +18,7 @@ const issuingProviderDescriptions = {
   'msa': 'This is a Microsoft Account token.'
 };
 
-const claimTypeDescriptions = {
+export const claimTypeDescriptions = {
   "aad_ipaddr": "The IP address the user authenticated from.",
   "b2c_streetAddress": "The street address where the user is located.",
   "aad_c_hash": "The code hash is included in ID tokens only when the ID token is issued with an OAuth 2.0 authorization code. It can be used to validate the authenticity of an authorization code. For details about performing this validation, see the OpenID Connect specification.",
@@ -130,7 +132,7 @@ const claimTypeDescriptions = {
   "aad_groups": "Provides object IDs that represent the subject\"s group memberships. These values are unique (see Object ID) and can be safely used for managing access, such as enforcing authorization to access a resource. The groups included in the groups claim are configured on a per-application basis, through the groupMembershipClaims property of the application manifest. A value of null will exclude all groups, a value of \"SecurityGroup\" will include only Active Directory Security Group memberships, and a value of \"All\" will include both Security Groups and Office 365 Distribution Lists.<br/>See the hasgroups claim below for details on using the groups claim with the implicit grant.<br/>For other flows, if the number of groups the user is in goes over a limit (150 for SAML, 200 for JWT), then an overage claim will be added to the claim sources pointing at the Graph endpoint containing the list of groups for the user."
 };
 
-function getIssuerDetails(iss: string): string {
+export function getIssuerDetails(iss: string): string {
   // TODO: Figure out how to determine issuer for more issuers
   if (!!iss) {
     if (iss.startsWith("https://sts.windows.net")) {
@@ -140,7 +142,7 @@ function getIssuerDetails(iss: string): string {
   return null;
 }
 
-function translateClaimsValue(claimType: string, value: any): string {
+export function translateClaimsValue(claimType: string, value: any): string {
   if (value === null) {
     return "";
   }
@@ -149,7 +151,7 @@ function translateClaimsValue(claimType: string, value: any): string {
   }
   if (typeof value === "object") {
     if (!Array.isArray(value)) {
-      return formatJson(value);
+      return Utils.formatJson(value);
     }
   }
   return value.toString();

@@ -1,6 +1,7 @@
 // Contains logic for parsing tokens
+import * as Jose from "node-jose";
 
-class Token {
+export class Token {
   public raw: string;
   
   constructor(token: string) {
@@ -9,7 +10,7 @@ class Token {
 }
 
 // Pure JWTs
-class JWT extends Token {
+export class JWT extends Token {
   public header: object;
   public payload: object;
   public signature: string;
