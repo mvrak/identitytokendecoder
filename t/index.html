@@ -59,9 +59,9 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
   <div class="grid-container token-input" id="tokenInput">
     <div class="grid-child">
       <h6 style="float:left">Enter token below (it never leaves the browser):</h6>
-      <a class="w3-button w3-light-grey token-button" href="#" id="tokenDelete">Delete<i class="w3-margin-left fa fa-trash"></i></a>
-      <a class="w3-button w3-light-grey token-button" href="#" id="tokenDiscard">Discard<i class="w3-margin-left fa fa-times"></i></a>
-      <a class="w3-button w3-light-grey token-button" href="#" id="tokenSave">Save<i class="w3-margin-left fa fa-save"></i></a>
+      <button class="w3-button w3-light-grey token-button" href="#" id="tokenDelete">Delete<i class="w3-margin-left fa fa-trash"></i></button>
+      <button class="w3-button w3-light-grey token-button" href="#" id="tokenDiscard">Discard<i class="w3-margin-left fa fa-times"></i></button>
+      <button class="w3-button w3-light-grey token-button" href="#" id="tokenSave">Save<i class="w3-margin-left fa fa-save"></i></button>
       <div class="token-box input-box" contenteditable="true" id="rawToken"></div>
       <div class="token-message" id="tokenMessage"></div>
     </div>
@@ -75,56 +75,42 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
       <!-- Tab content -->
       <div id="verify" class="tabcontent">
         <h6 style="float:left">Select secret:</h6>
-        <a style="float:right; margin-left:5px" href="javascript:void(0)" id="verifySaveSecret" title="Save" class="w3-button w3-light-grey"><i class="fa fa-save"></i></a>
-        <a style="float:right; margin-left:5px" href="javascript:void(0)" id="verifyEditSecret" title="Edit" class="w3-button w3-light-grey"><i class="fa fa-edit"></i></a>
-        <a style="float:right; margin-left:5px" href="javascript:void(0)" id="verifyNewSecret" title="New" class="w3-button w3-light-grey"><i class="fa fa-pencil"></i></a>
-        <select style="float:right; width:100%" class="w3-select" id="verifySecret">
-          <option value="custom">Enter secret</option>
-          <option value="secret1">Sample secret 1</option>
-          <option value="secret2">Sample secret 2</option>
+        <button class="tab-button-small" href="javascript:void(0)" id="verifyEditSecret" title="Edit"><i class="fa fa-edit"></i></button>
+        <button class="tab-button-small" href="javascript:void(0)" id="verifyNewSecret" title="New"><i class="fa fa-pencil"></i></button>
+        <select class="w3-select secret-select" id="verifySecret">
         </select>
 
-        <div style="float:left; width:100%; margin-top:10px">
+        <div class="tab-section">
           <input type="checkbox" id="autoSelectVerify">
           <lablel for="autoSelectVerify">Automatically select secret</lablel>
         </div>
-        <div style="float:left; width:100%; margin-top:10px">
+        <div class="tab-section">
           Public key value:
-          <div class="tab-secret-box" contenteditable="true" id="verifySecretValue"></div>
+          <div class="tab-secret-box" contenteditable="false" id="verifySecretValue"></div>
         </div>
-        <div style="float:left; width:100%; margin-top:10px">
-          <span style="float:left"><b>Source</b></span>
-          <span style="float:right"><a href="https://login.microsoftonline.com/common/discovery/keys">https://login.microsoftonline.com/common/discovery/keys</a></span>
+        <div class="tab-section">
+          <span style="float:left"><b>Key Source</b></span>
+          <span style="float:right" id="sourceValue"><a href="https://login.microsoftonline.com/common/discovery/keys">https://login.microsoftonline.com/common/discovery/keys</a></span>
         </div>
-        <div style="float:left; width:100%; margin-top:10px">
+        <div class="tab-section">
           <span style="float:left"><b>Algorithm</b></span>
-          <span style="float:right">HS256</span>
+          <span style="float:right" id="algorithmValue">HS256</span>
         </div>
-        <div style="float:left; width:100%; margin-top:10px">
-          <span style="float:left"><b>Signature</b></span>
-          <span class="w3-text-green" style="float:right">06vzYfiSpj1X9s0-CL2nE7NH4LloASMikZCNfHIJ8tY</span>
-        </div>
-        <h3 class="w3-green signature-verify"><i class="w3-margin-left fa fa-check-circle"></i> Signature verified</h3>
-        <!-- <h3 class="w3-red"><i class="w3-margin-left fa fa-times-circle"></i> Invalid signature</h3>
-        <h3 class="w3-blue"><i class="w3-margin-left fa fa-question-circle"></i> Unable to verify</h3> -->
+        <div id="signatureVerify"></div>
       </div>
 
       <div id="generate" class="tabcontent">
         <h6 style="float:left">Select secret:</h6>
-        <a style="float:right; margin-left:5px" href="javascript:void(0)" id="generateSaveSecret" title="Save" class="w3-button w3-light-grey"><i class="fa fa-save"></i></a>
-        <a style="float:right; margin-left:5px" href="javascript:void(0)" id="generateEditSecret" title="Edit" class="w3-button w3-light-grey"><i class="fa fa-edit"></i></a>
-        <a style="float:right; margin-left:5px" href="javascript:void(0)" id="generateNewSecret" title="New" class="w3-button w3-light-grey"><i class="fa fa-pencil"></i></a>
-        <select style="float:right; width:100%" class="w3-select" id="generateSecret">
-          <option value="custom">Enter secret</option>
-          <option value="secret1">Sample secret 1</option>
-          <option value="secret2">Sample secret 2</option>
+        <button class="tab-button-small" href="javascript:void(0)" id="generateEditSecret" title="Edit"><i class="fa fa-edit"></i></button>
+        <button class="tab-button-small" href="javascript:void(0)" id="generateNewSecret" title="New"><i class="fa fa-pencil"></i></button>
+        <select class="w3-select secret-select" id="generateSecret">
         </select>
 
-        <div style="float:left; width:100%; margin-top:10px">
+        <div class="tab-section">
            Private key value:
-          <div class="tab-secret-box" contenteditable="true" id="generateSecretValue"></div>
+          <div class="tab-secret-box" contenteditable="false" id="generateSecretValue"></div>
         </div>
-        <div style="float:left; width:100%; margin-top:10px">
+        <div class="tab-section">
           <input type="checkbox" id="addExpiry">
           <lablel for="addExpiry">Add issuing/expiry time</lablel>
         </div>
@@ -132,75 +118,58 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
         <div style="float:left; width:100%">
           <lablel for="validTime" style="float:left; margin-top:10px"><b>Valid for</b></lablel>
           <select style="float:right; width:50px" class="w3-select" id="validTimeUnit">
-            <option value="custom">sec</option>
-            <option value="secret1">min</option>
-            <option value="secret2">hrs</option>
           </select>
-          <input type="text" id="validTime" style="float:right; width:50px; margin-top:10px; margin-right: 5px">
+          <input type="number" id="validTime" style="float:right; width:75px; margin-top:10px; margin-right: 5px">
         </div>
 
         <div style="float:left; width:100%">
           <lablel for="algorithm" style="float:left; margin-top:10px"><b>Algorithm</b></lablel>
           <select style="float:right; width:100px" class="w3-select" id="algorithm">
-            <option value="hs256">HS256</option>
-            <option value="hs384">HS384</option>
-            <option value="hs512">HS512</option>
-            <option value="rs256">RS256</option>
-            <option value="rs384">RS384</option>
-            <option value="rs512">RS512</option>
           </select>
         </div>
 
         <div style="float:left; width:100%">
-          <a class="w3-button w3-light-grey tab-button" href="#" id="generateBtn">Generate new token<i class="w3-margin-left fa fa-wrench"></i></a>
-          <a class="w3-button w3-light-grey tab-button" href="#" id="generateCopyBtn">Copy token<i class="w3-margin-left fa fa-copy"></i></a>
+          <button class="w3-button w3-light-grey tab-button" href="#" id="generateBtn">Generate new token<i class="w3-margin-left fa fa-wrench"></i></button>
+          <button  class="w3-button w3-light-grey tab-button" href="#" id="generateCopyBtn">Copy token<i class="w3-margin-left fa fa-copy"></i></button >
         </div>
       </div>
 
       <div id="decrypt" class="tabcontent">
         <h6 style="float:left">Select secret:</h6>
-        <a style="float:right; margin-left:5px" href="javascript:void(0)" id="decryptSaveSecret" title="Save" class="w3-button w3-light-grey"><i class="fa fa-save"></i></a>
-        <a style="float:right; margin-left:5px" href="javascript:void(0)" id="decryptEditSecret" title="Edit" class="w3-button w3-light-grey"><i class="fa fa-edit"></i></a>
-        <a style="float:right; margin-left:5px" href="javascript:void(0)" id="decryptNewSecret" title="New" class="w3-button w3-light-grey"><i class="fa fa-pencil"></i></a>
-        <select style="float:right; width:100%" class="w3-select" id="decryptSecret">
-          <option value="custom">Enter secret</option>
-          <option value="secret1">Sample secret 1</option>
-          <option value="secret2">Sample secret 2</option>
+        <button class="tab-button-small" href="javascript:void(0)" id="decryptEditSecret" title="Edit"><i class="fa fa-edit"></i></button>
+        <button class="tab-button-small" href="javascript:void(0)" id="decryptNewSecret" title="New"><i class="fa fa-pencil"></i></button>
+        <select class="w3-select secret-select" id="decryptSecret">
         </select>
 
-        <div style="float:left; width:100%; margin-top:10px">
+        <div class="tab-section">
           <input type="checkbox" id="autoSelectDecrypt">
           <lablel for="autoSelectDecrypt">Automatically select secret</lablel>
         </div>
 
-        <div style="float:left; width:100%; margin-top:10px">
-          Public key value:
-          <div class="tab-secret-box" contenteditable="true" id="decryptSecretValue"></div>
+        <div class="tab-section">
+          Private key value:
+          <div class="tab-secret-box" contenteditable="false" id="decryptSecretValue"></div>
         </div>
 
-        <div style="float:left; width:100%; margin-top:10px">
-          <a class="w3-button w3-light-grey tab-button" href="#" id="decryptBtn">Get decrypted token<i class="w3-margin-left fa fa-wrench"></i></a>
-          <a class="w3-button w3-light-grey tab-button" href="#" id="decryptCopyBtn">Copy token<i class="w3-margin-left fa fa-copy"></i></a>
+        <div class="tab-section">
+          <button class="w3-button w3-light-grey tab-button" href="#" id="decryptBtn">Get decrypted token<i class="w3-margin-left fa fa-wrench"></i></button>
+          <button class="w3-button w3-light-grey tab-button" href="#" id="decryptCopyBtn">Copy token<i class="w3-margin-left fa fa-copy"></i></button>
         </div>
       </div>
 
       <div id="encrypt" class="tabcontent">
         <h6 style="float:left">Select secret:</h6>
-        <a style="float:right; margin-left:5px" href="javascript:void(0)" id="encryptSaveSecret" title="Save" class="w3-button w3-light-grey"><i class="fa fa-save"></i></a>
-        <a style="float:right; margin-left:5px" href="javascript:void(0)" id="encryptEditSecret" title="Edit" class="w3-button w3-light-grey"><i class="fa fa-edit"></i></a>
-        <a style="float:right; margin-left:5px" href="javascript:void(0)" id="encryptNewSecret" title="New" class="w3-button w3-light-grey"><i class="fa fa-pencil"></i></a>
-        <select style="float:right; width:100%" class="w3-select" id="encryptSecret">
-          <option value="custom">Enter secret</option>
-          <option value="secret1">Sample secret 1</option>
-          <option value="secret2">Sample secret 2</option>
+        <button class="tab-button-small" href="javascript:void(0)" id="encryptEditSecret" title="Edit"><i class="fa fa-edit"></i></button>
+        <button class="tab-button-small" href="javascript:void(0)" id="encryptNewSecret" title="New"><i class="fa fa-pencil"></i></button>
+        <select class="w3-select secret-select" id="encryptSecret">
         </select>
 
-        <div style="float:left; width:100%; margin-top:10px">
-           Private key value:
-          <div class="tab-secret-box" contenteditable="true" id="encryptSecretValue"></div>
+        <div class="tab-section">
+           Public key value:
+          <div class="tab-secret-box" contenteditable="false" id="encryptSecretValue"></div>
         </div>
 
-        <div style="float:left; width:100%; margin-top:10px">
+        <div class="tab-section">
           <input type="checkbox" id="encryptToken">
           <lablel for="encryptToken">Encrypt generated token</lablel>
         </div>
@@ -208,13 +177,12 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
         <div style="float:left; width:100%">
           <lablel for="algorithm" style="float:left; margin-top:10px"><b>Algorithm</b></lablel>
           <select style="float:right; width:200px" class="w3-select" id="encryptAlgorithm">
-            <option value="a128cbchs256">A128CBC-HS256</option>
           </select>
         </div>
 
-        <div style="float:left; width:100%; margin-top:10px">
-          <a class="w3-button w3-light-grey tab-button" href="#" id="encryptBtn">Generate new token and encrypt<i class="w3-margin-left fa fa-wrench"></i></a>
-          <a class="w3-button w3-light-grey tab-button" href="#" id="encryptCopyBtn">Copy token<i class="w3-margin-left fa fa-copy"></i></a>
+        <div class="tab-section">
+          <button class="w3-button w3-light-grey tab-button" href="#" id="encryptBtn">Generate new token and encrypt<i class="w3-margin-left fa fa-wrench"></i></button>
+          <button class="w3-button w3-light-grey tab-button" href="#" id="encryptCopyBtn">Copy token<i class="w3-margin-left fa fa-copy"></i></button>
         </div>
       </div>
     </div>

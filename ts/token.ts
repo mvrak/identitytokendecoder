@@ -1,11 +1,24 @@
 // Contains logic for parsing tokens
 import * as Jose from "node-jose";
 
+export enum SigningAlgorithm {
+  HS256 = "HS256",
+  RS256 = "RS256"
+}
+
+export enum EncryptionAlgorithm {
+  A128CBC = "A128CBC-HS256"
+}
+
 export class Token {
   public raw: string;
   
   constructor(token: string) {
     this.raw = token;
+  }
+
+  public verify(_key: string) {
+    return false;
   }
 }
 
@@ -37,6 +50,10 @@ export class JWT extends Token {
     }
 
     this.signature = parts[2];
+  }
+
+  public verify(key: string): boolean {
+    return false;
   }
 }
 

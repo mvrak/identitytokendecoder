@@ -1,7 +1,7 @@
 import { Secret } from "./secret";
 import { TokenModel } from "./tokenModel";
 
-export class StorageHelper {
+export class Store {
   private static readonly LocalStorageKey: string = "decoderidentitytokens"; 
 
   constructor() {
@@ -19,6 +19,6 @@ export class StorageHelper {
 
   public purgeLocalStorage() {
     //tbd
-    localStorage.removeItem(StorageHelper.LocalStorageKey);
+    localStorage.removeItem(Store.LocalStorageKey);
   }
 }

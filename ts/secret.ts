@@ -3,12 +3,14 @@ import { Token } from "./token";
 export class Secret {
   public id: string;
   public title: string;
-  public saved?: Date;
+  public saved: Date;
 
-  public publicKey?: string;
-  public privateKey?: string;
+  public publicKey: string;
+  public privateKey: string;
 
-  public associatedTokens?: Token[];
+  public associatedTokens: Token[];
+
+  public url: string;
 
   private _originalPublicKey: string;
   private _originalPrivateKey: string;
@@ -24,7 +26,7 @@ export class Secret {
   }
 
   public isDirty(): boolean {
-    return this.publicKey !== this._originalPublicKey || this.privateKey !== this._originalPrivateKey;
+    return !!!this.saved || this.publicKey !== this._originalPublicKey || this.privateKey !== this._originalPrivateKey;
   }
 
   public save() {
