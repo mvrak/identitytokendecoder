@@ -9,7 +9,7 @@
 
 .token-input {
   display: grid;
-  grid-template-columns: 3fr 1fr;
+  grid-template-columns: 5fr 3fr;
   grid-gap: 20px;
   width: 100%;
   margin-bottom: 10px;
@@ -29,7 +29,7 @@
 }
 
 .token-box {
-  min-height: 200px;
+  min-height: 320px;
   float: left;
   width: 100%;
 }
@@ -118,5 +118,26 @@
 /* Style the tab content */
 .tabcontent {
   display: none;
-  padding: 6px 12px;
+  padding: 10px 12px;
+  min-height: 360px;
+}
+
+.tab-secret-box {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid black;
+  word-wrap: break-word;
+  word-break: break-word;
+  height: 50px;
+  overflow-y: scroll;
+}
+
+.signature-verify {
+  float: left;
+  width: 100%;
+}
+
+.tab-button {
+  margin-right: 10px;
+  margin-bottom: 10px;
 }
