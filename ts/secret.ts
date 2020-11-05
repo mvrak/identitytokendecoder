@@ -12,6 +12,7 @@ export class Secret {
 
   public url: string;
 
+  private _originalTitle: string;
   private _originalPublicKey: string;
   private _originalPrivateKey: string;
 
@@ -21,23 +22,27 @@ export class Secret {
     this.saved = saved;
     this.publicKey = publicKey ?? "";
     this.privateKey = privateKey ?? "";
+
+    this._originalTitle = title;
     this._originalPublicKey = publicKey ?? "";
     this._originalPrivateKey = privateKey ?? "";
   }
 
   public isDirty(): boolean {
-    return !!!this.saved || this.publicKey !== this._originalPublicKey || this.privateKey !== this._originalPrivateKey;
+    return !!!this.saved || this.title !== this._originalTitle || this.publicKey !== this._originalPublicKey || this.privateKey !== this._originalPrivateKey;
   }
 
   public save() {
     this.saved = new Date();
     this._originalPublicKey = this.publicKey;
     this._originalPrivateKey = this.privateKey;
+    this._originalTitle = this.title;
   }
 
   public discard() {
-    this.publicKey = this._originalPublicKey ?? "";
-    this.privateKey = this._originalPrivateKey ?? "";
+    this.title = this._originalTitle;
+    this.publicKey = this._originalPublicKey;
+    this.privateKey = this._originalPrivateKey;
   }
 
   public dirtyTitle(): string {

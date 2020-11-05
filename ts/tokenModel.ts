@@ -17,6 +17,7 @@ export class TokenModel {
 
   // Original values
   private _originalToken: string;
+  private _originalTitle: string;
 
   constructor(id: string, title: string, saved?: Date, rawToken?: string) {
     this.id = id;
@@ -24,10 +25,12 @@ export class TokenModel {
     this.saved = saved;
     
     this.setToken(rawToken ?? "");
-    this._originalToken = rawToken;
-
+    
     this.verifySettings = new VerifySettings();
     this.decryptSettings = new DecryptSettings();
+    
+    this._originalToken = rawToken;
+    this._originalTitle = title;
   }
 
   public setToken(rawToken: string) {
@@ -52,16 +55,18 @@ export class TokenModel {
   }
 
   public isDirty(): boolean {
-    return !!!this.saved || this.token.raw !== this._originalToken;
+    return !!!this.saved || this.title !== this._originalTitle || this.token.raw !== this._originalToken;
   }
 
   public save() {
     this.saved = new Date();
     this._originalToken = this.token.raw;
+    this._originalTitle = this.title;
   }
 
   public discard() {
     this.setToken(this._originalToken ?? "");
+    this.title = this._originalTitle;
   }
 
   public dirtyTitle(): string {

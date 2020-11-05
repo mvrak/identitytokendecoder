@@ -53,7 +53,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
 <!-- Token display Fragment -->
 <div id="tokensDisplay" class="w3-container" style="display:none">
   <br>
-  <h4><i class="fa fa-id-card-o w3-animate-top"></i> <span id="tokenTitle"></span></h4>
+  <h4><i class="fa fa-id-card-o w3-animate-top"></i> <span contenteditable="true" id="tokenTitle"></span><span id="tokenDirty"></span></h4>
   <h6 class="w3-opacity"><i class="fa fa-clock-o "></i> <span id="tokenLastSaved"></span></h6>
   <hr>
   <div class="grid-container token-input" id="tokenInput">
@@ -205,7 +205,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
 <!-- Secret display Fragment -->
 <div id="secretsDisplay" class="w3-container" style="display:none">
   <br>
-  <h4><i class="fa fa-id-card-o w3-animate-top"></i> <span id="secretTitle"></span></h4>
+  <h4><i class="fa fa-id-card-o w3-animate-top"></i> <span id="secretTitle" contenteditable="true"></span><span id="secretDirty"></span></h4>
   <h6 class="w3-opacity"><i class="fa fa-clock-o "></i> <span id="secretLastSaved"></span></h6>
   <hr>
   <div class="secret-display">
