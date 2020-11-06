@@ -388,6 +388,22 @@ export class App {
       });
   }
 
+  private _onAutoEncryptChanged() {
+    const token = this._current as TokenModel;
+    const settings = token.decryptSettings;
+
+    const autoEncrypt = document.getElementById("autoEncrypt") as HTMLInputElement;
+    settings.autoEncrypt = autoEncrypt.checked;
+  }
+
+  private _onEncryptAlgorithmChanged() {
+    const token = this._current as TokenModel;
+    const settings = token.decryptSettings;
+
+    const encryptAlgorithm = document.getElementById("encryptAlgorithm") as HTMLInputElement;
+    settings.algorithm = encryptAlgorithm.value as EncryptionAlgorithm;
+  }
+
   private async _onCopy() {
     const token = this._current as TokenModel;
 
@@ -403,6 +419,12 @@ export class App {
       this._renderVerifyTab(token);
       this._renderGenerateTab(token);
     });
+  }
+
+  private async _onDecrypt() {
+  }
+
+  private async _onEncrypt() {
   }
 
   private _purgeAll() {
@@ -510,6 +532,9 @@ export class App {
     document.getElementById("validTime").addEventListener('input', () => this._onValidTimeChanged());
     document.getElementById("validTimeUnit").addEventListener('input', () => this._onValidTimeUnitChanged());
     document.getElementById("algorithm").addEventListener('input', () => this._onAlgorithmChanged());
+    
+    document.getElementById("autoEncrypt").addEventListener('input', () => this._onAutoEncryptChanged());
+    document.getElementById("encryptAlgorithm").addEventListener('input', () => this._onEncryptAlgorithmChanged());
 
     document.getElementById("verifyEditKey").addEventListener('click', () => this._onEditKeyVerify());
     document.getElementById("generateEditKey").addEventListener('click', () => this._onEditKeyVerify());
@@ -522,6 +547,9 @@ export class App {
     document.getElementById("encryptNewKey").addEventListener('click', () => this._newKey());
 
     document.getElementById("generateBtn").addEventListener('click', () => this._onGenerate());
+    document.getElementById("decryptBtn").addEventListener('click', () => this._onDecrypt());
+    document.getElementById("encryptBtn").addEventListener('click', () => this._onEncrypt());
+
     document.getElementById("generateCopyBtn").addEventListener('click', () => this._onCopy());
     document.getElementById("decryptCopyBtn").addEventListener('click', () => this._onCopy());
   }
@@ -782,6 +810,8 @@ export class App {
 
     const autoSelect = document.getElementById("autoSelectDecrypt") as HTMLInputElement;
     autoSelect.checked = settings.autoSelect;
+
+    this._enableButton("decryptBtn", !!settings.key?.privateKey);
   }
   
   private _renderEncryptTab(token: TokenModel) {
@@ -797,6 +827,8 @@ export class App {
 
     const algorithmValue = document.getElementById("encryptAlgorithm") as HTMLInputElement;
     algorithmValue.value = settings.algorithm ?? "None";
+
+    this._enableButton("encryptBtn", !!settings.key?.publicKey);
   }
 
   private _setKeySelect(id: string, autoSelect: boolean, key: Key) {
