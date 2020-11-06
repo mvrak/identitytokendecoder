@@ -1,4 +1,5 @@
 import { Key } from "./key";
+import { KeyFetch } from "./keyFetch";
 import { SettingsTab, TimeUnit } from "./settings";
 import { Store } from "./store";
 import { SigningAlgorithm, EncryptionAlgorithm, JWT, Token } from "./token";
@@ -30,9 +31,11 @@ export class App {
   private _settingsTab: SettingsTab;
 
   private _store: Store;
+  private _keyFetch: KeyFetch;
 
   constructor() {
     this._store = new Store();
+    this._keyFetch = new KeyFetch();
 
     // TODO: Do token retrieval from local storage
     // const storedValues = this._storage.retrieveAll();
@@ -76,7 +79,6 @@ export class App {
     this._renderTokenDetails(token);
     this._enableTokenButtons(token);
     this._openTab(this._settingsTab);
-    
     this._verify(token)
       .then(() => this._decrypt(token))
       .then(() => this._renderTabs(token));
@@ -945,14 +947,14 @@ export class App {
       settings.algorithm = jwt.header["alg"];
       if (settings.autoSelect) {
         // Attempt to find a key
-        if (this._keys.length === 0) {
-          settings.key = null;
-          settings.verificationResult = "Unable to verify - no key";
-        } else {
-          settings.key = await jwt.searchAndVerify(this._keys, settings.algorithm);
-          settings.verificationResult = !!settings.key;
-        }
+        const search = await jwt.searchAndVerify(this._keys, settings.algorithm, this._keyFetch);
+        settings.verificationResult = search[0];
+        settings.key = search[1];
       } else {
+        if (!!settings.key && !!!this._keys.find((key) => key.id == settings.key.id)) {
+          settings.key = null;
+        }
+
         // Set key to first key if none available
         if (!!!settings.key && this._keys.length > 0) {
           settings.key = this._keys[0];

@@ -1,6 +1,7 @@
 // Contains logic for parsing tokens
 import { JWK, JWS } from "node-jose";
 import { Key } from "./key";
+import { KeyFetch } from "./keyFetch";
 import * as Utils from "./utils";
 
 export enum SigningAlgorithm {
@@ -54,7 +55,7 @@ export class JWT extends Token {
     this.signature = parts[2];
   }
 
-  public async verify(key: string, alg: SigningAlgorithm): Promise<boolean | string> {
+  private async _getKey(key: string, alg: SigningAlgorithm): Promise<JWK.Key> {
     // Check to see if raw secret 
     try {
       JSON.parse(key);
@@ -62,7 +63,7 @@ export class JWT extends Token {
       if (alg?.startsWith("HS")) {
         key = `{"kty":"oct","k":"${key}"}`;
       } else {
-        return false;
+        return null;
       }
     }
 
@@ -72,25 +73,80 @@ export class JWT extends Token {
     }
 
     try {
-      const jwk = await (isPem ? JWK.asKey(key, "pem") : JWK.asKey(key));
+      return await (isPem ? JWK.asKey(key, "pem") : JWK.asKey(key));
+    } catch {
+      return null;
+    }
+  }
+
+  public async verify(key: string, alg: SigningAlgorithm): Promise<boolean | string> {
+    // Try and get key
+    const jwk = await this._getKey(key, alg);
+    if (!!!jwk) {
+      return "Unable to verify - invalid key";
+    }
+
+    try {
+      await JWS.createVerify(jwk).verify(this.raw)
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  public async searchAndVerify(keys: Key[], alg: SigningAlgorithm, keyFetch: KeyFetch): Promise<[boolean | string, Key]> {
+    // Check if there is a token with a matching kid
+    const keyPromises = keys.filter(key => !!key.publicKey).map(key => this._getKey(key.publicKey, alg));
+
+    const jwks = (await Promise.all(keyPromises)).filter((jwk) => !!jwk);
+
+    const kid = this.header["kid"];
+    if (!!kid) {
+      // Get key with matching kid
+      const kidMatch = jwks.find((jwk) => jwk.kid === kid);
+      if (!!kidMatch) {
+        try {
+          await JWS.createVerify(kidMatch).verify(this.raw);
+          return [true, keys[jwks.indexOf(kidMatch)]];
+        } catch {
+          return [false, keys[jwks.indexOf(kidMatch)]];
+        }
+      }
+    }
+
+    // No key with matching kid
+    // Try verification with all
+    const verifyPromises = jwks.map(async (jwk) => {
       try {
         await JWS.createVerify(jwk).verify(this.raw)
         return true;
       } catch {
         return false;
       }
-    } catch {
-      return "Unable to verify - invalid key";
-    }
-  }
+    });
 
-  public async searchAndVerify(keys: Key[], alg: SigningAlgorithm): Promise<Key> {
-    const promises = keys.filter(key => !!key.publicKey).map(key => this.verify(key.publicKey, alg));
+    const results = await Promise.all(verifyPromises);
 
-    const results = await Promise.all(promises);
-    
     const index = results.indexOf(true);
-    return index !== -1 ? keys[index] : null;
+    if (index !== -1) {
+      return [true, keys[index]];
+    }
+
+    const iss = this.payload["iss"];
+    if (!!kid && !!iss) {
+      // Check keyFetch
+      const fetchedKey = await keyFetch.fetch(iss, kid);
+      if (!!fetchedKey) {
+        try {
+          await JWS.createVerify(fetchedKey.jwk).verify(this.raw);
+          return [true, fetchedKey.key];
+        } catch {
+          return [false, fetchedKey.key];
+        }
+      }
+    }
+
+    return ["Unable to verify - no key", null];
   }
 }
 
