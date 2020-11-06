@@ -55,8 +55,12 @@ export class JWT extends Token {
 
   public verify(key: string, alg: SigningAlgorithm): Promise<boolean | string> {
     // Check to see if raw secret entered
-    if (alg.startsWith("HS") && !key.includes("{")) {
-      key = `{"kty":"oct","k":"${key}"}`;
+    if (!key.includes("{")) {
+      if (alg.startsWith("HS")) {
+        key = `{"kty":"oct","k":"${key}"}`;
+      } else {
+        return new Promise(resolve => resolve(false));
+      }
     }
 
     const isPem = Utils.isPem(key);
