@@ -84,7 +84,7 @@ export class App {
       .then(() => this._renderTabs(token));
   }
   
-  private _displayKey(key: Key) {
+  private _displayKey(key: Key, backLink?: TokenModel) {
     this._highlightMenuItem(key.id);
     this._current = key;
 
@@ -100,6 +100,8 @@ export class App {
 
     // Enable/disable buttons
     this._enableKeyButtons(key);
+
+    this._renderBackLink(backLink);
   }
   
   private _newToken() {
@@ -111,13 +113,23 @@ export class App {
     this._displayToken(newToken);
   }
 
-  private _newKey() {
+  private _newKey(backLink?: TokenModel) {
     const id = this._getNewKeyId();
     const newKey = new Key(id, "New Key");
     this._keys.push(newKey);
     this._renderNewKey(newKey);
     this._expandMenu("keys");
-    this._displayKey(newKey);
+    this._displayKey(newKey, backLink);
+  }
+
+  private _renderBackLink(backLink?: TokenModel) {
+    const tokenLink = document.getElementById("tokenLink");
+    if (!!backLink) {
+      tokenLink.innerHTML = `Back to <a href="javascript:void(0)" id="backLink">${backLink.title}</a>`
+      document.getElementById("backLink").addEventListener('click', () => this._displayToken(backLink));
+    } else {
+      tokenLink.innerHTML = "";
+    }
   }
 
   private _onTokenChange() {
@@ -332,7 +344,7 @@ export class App {
     const settings = token.verifySettings;
     
     const key = settings.key;
-    this._displayKey(key);
+    this._displayKey(key, token);
   }
 
   private _onEditKeyDecrypt() {
@@ -340,7 +352,12 @@ export class App {
     const settings = token.decryptSettings;
     
     const key = settings.key;
-    this._displayKey(key);
+    this._displayKey(key, token);
+  }
+
+  private _onNewKey() {
+    const token = this._current as TokenModel;
+    this._newKey(token);
   }
 
   private _onAddExpiryChanged() {
@@ -541,10 +558,10 @@ export class App {
     document.getElementById("decryptEditKey").addEventListener('click', () => this._onEditKeyDecrypt());
     document.getElementById("encryptEditKey").addEventListener('click', () => this._onEditKeyDecrypt());
 
-    document.getElementById("verifyNewKey").addEventListener('click', () => this._newKey());
-    document.getElementById("generateNewKey").addEventListener('click', () => this._newKey());
-    document.getElementById("decryptNewKey").addEventListener('click', () => this._newKey());
-    document.getElementById("encryptNewKey").addEventListener('click', () => this._newKey());
+    document.getElementById("verifyNewKey").addEventListener('click', () => this._onNewKey());
+    document.getElementById("generateNewKey").addEventListener('click', () => this._onNewKey());
+    document.getElementById("decryptNewKey").addEventListener('click', () => this._onNewKey());
+    document.getElementById("encryptNewKey").addEventListener('click', () => this._onNewKey());
 
     document.getElementById("generateBtn").addEventListener('click', () => this._onGenerate());
     document.getElementById("decryptBtn").addEventListener('click', () => this._onDecrypt());
