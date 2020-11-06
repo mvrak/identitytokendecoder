@@ -803,9 +803,14 @@ export class App {
       settings.algorithm = jwt.header["alg"];
       if (settings.autoSelect) {
         // Attempt to find a key
-        // Keep null for now
+        if (this._tokens.length === 0) {
+          settings.key = null;
+          settings.verificationResult = "Unable to verify - no key";
+        } else {
+          settings.key = await jwt.searchAndVerify(this._keys, settings.algorithm);
+          settings.verificationResult = !!settings.key;
+        }
         settings.key = null;
-        settings.verificationResult = "Unable to verify - no key";
       } else {
         // Set key to first key if none available
         if (!!!settings.key && this._keys.length > 0) {

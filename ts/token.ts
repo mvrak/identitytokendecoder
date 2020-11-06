@@ -1,5 +1,6 @@
 // Contains logic for parsing tokens
 import { JWK, JWS } from "node-jose";
+import { Key } from "./key";
 import * as Utils from "./utils";
 
 export enum SigningAlgorithm {
@@ -53,13 +54,13 @@ export class JWT extends Token {
     this.signature = parts[2];
   }
 
-  public verify(key: string, alg: SigningAlgorithm): Promise<boolean | string> {
+  public async verify(key: string, alg: SigningAlgorithm): Promise<boolean | string> {
     // Check to see if raw secret entered
     if (!key.includes("{")) {
       if (alg.startsWith("HS")) {
         key = `{"kty":"oct","k":"${key}"}`;
       } else {
-        return new Promise(resolve => resolve(false));
+        return false;
       }
     }
 
@@ -68,23 +69,26 @@ export class JWT extends Token {
       key = Utils.parseKey(key, "\r\n");
     }
 
-    return new Promise((resolve, _reject) => {
+    try {
+      const jwk = await (isPem ? JWK.asKey(key, "pem") : JWK.asKey(key));
       try {
-        (isPem ? JWK.asKey(key, "pem") : JWK.asKey(key)).then((jwk) => {
-          try {
-            JWS.createVerify(jwk)
-              .verify(this.raw)
-              .then(() => {
-                resolve(true);
-              });
-          } catch {
-            resolve(false);
-          }
-        });
+        await JWS.createVerify(jwk).verify(this.raw)
+        return true;
       } catch {
-        resolve("Unable to verify - invalid key");
+        return false;
       }
-    });
+    } catch {
+      return "Unable to verify - invalid key";
+    }
+  }
+
+  public async searchAndVerify(keys: Key[], alg: SigningAlgorithm): Promise<Key> {
+    const promises = keys.filter(key => !!key.publicKey).map(key => this.verify(key.publicKey, alg));
+
+    const results = await Promise.all(promises);
+    
+    const index = results.indexOf(true);
+    return index !== -1 ? keys[index] : null;
   }
 }
 
