@@ -16,10 +16,6 @@ export class Token {
   constructor(token: string) {
     this.raw = token;
   }
-
-  public verify(_key: string) {
-    return false;
-  }
 }
 
 // Pure JWTs
@@ -53,7 +49,7 @@ export class JWT extends Token {
   }
 
   public verify(key: string): boolean {
-    return false;
+    return null;
   }
 }
 

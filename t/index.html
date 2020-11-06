@@ -128,7 +128,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
           </select>
         </div>
 
-        <div style="float:left; width:100%">
+        <div class="tab-section">
           <button class="w3-button w3-light-grey tab-button" href="#" id="generateBtn">Generate new token<i class="w3-margin-left fa fa-wrench"></i></button>
           <button  class="w3-button w3-light-grey tab-button" href="#" id="generateCopyBtn">Copy token<i class="w3-margin-left fa fa-copy"></i></button >
         </div>
@@ -170,12 +170,12 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
         </div>
 
         <div class="tab-section">
-          <input type="checkbox" id="encryptToken">
-          <lablel for="encryptToken">Encrypt generated token</lablel>
+          <input type="checkbox" id="autoEncrypt">
+          <lablel for="autoEncrypt">Encrypt generated token</lablel>
         </div>
 
         <div style="float:left; width:100%">
-          <lablel for="algorithm" style="float:left; margin-top:10px"><b>Algorithm</b></lablel>
+          <lablel for="encryptAlgorithm" style="float:left; margin-top:10px"><b>Algorithm</b></lablel>
           <select style="float:right; width:200px" class="w3-select" id="encryptAlgorithm">
           </select>
         </div>

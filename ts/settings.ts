@@ -25,7 +25,9 @@ export class VerifySettings {
   // Generate settings
   public addExpiry: boolean;
   public validTime: number;
-  public validUnit: TimeUnit;
+  public validTimeUnit: TimeUnit;
+
+  public verificationResult?: boolean;
 
   constructor() {
     this.secret = null;
@@ -35,7 +37,9 @@ export class VerifySettings {
 
     this.addExpiry = false;
     this.validTime = null;
-    this.validUnit = TimeUnit.Second;
+    this.validTimeUnit = TimeUnit.Second;
+
+    this.verificationResult = null;
   }
 }
 

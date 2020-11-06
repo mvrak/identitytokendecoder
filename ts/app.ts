@@ -50,19 +50,23 @@ export class App {
 
     this._settingsTab = SettingsTab.Verify;
 
+    this._populateSelect();
+    this._registerCallbacks();
+
     this._renderTokens();
     this._renderSecrets();
     
     this._expandMenu("tokens");
-    this._displayToken(this._tokens[0]);
 
-    this._populateSelect();
-    this._registerCallbacks();
+    this._displayToken(this._tokens[0]);
   }
 
   private _displayToken(token: TokenModel) {
     this._highlightMenuItem(token.id);
     this._current = token;
+
+    this._verify(token);
+    this._decrypt(token);
     
     document.getElementById("tokensDisplay").style.display = "block";
     document.getElementById("secretsDisplay").style.display = "none";
@@ -72,7 +76,7 @@ export class App {
     document.getElementById("rawToken").innerHTML = this._displayColorCodedToken(token.token.raw);
     
     this._renderTokenDetails(token);
-    this._renderTabs();
+    this._renderTabs(token);
     this._openTab(this._settingsTab);
     this._enableTokenButtons(token);
   }
@@ -116,10 +120,14 @@ export class App {
     const token = this._current as TokenModel;
     token.setToken(tokenString);
 
+    this._verify(token);
+    this._decrypt(token);
+
     this._renderTokenTitle(token);
     rawTokenDiv.innerHTML = this._displayColorCodedToken(tokenString);
     this._renderTokenDetails(token);
     this._reRenderToken(token);
+    this._renderTabs(token);
     
     // Enable/disable buttons
     this._enableTokenButtons(token);
@@ -170,17 +178,23 @@ export class App {
     token.save();
 
     this._store.saveToken(token);
+    document.getElementById("tokenLastSaved").innerHTML = Utils.displayDate(token.saved);
 
     this._onSaveDiscardToken(token);
-    this._enableTokenButtons(token);
   }
   
   private _onTokenDiscard() {
     const token = this._current as TokenModel;
     token.discard();
-    
+
+    this._verify(token);
+    this._decrypt(token);
+
+    document.getElementById("rawToken").innerHTML = this._displayColorCodedToken(token.token.raw);
+    this._renderTokenDetails(token);
+    this._renderTabs(token);
+
     this._onSaveDiscardToken(token);
-    this._enableTokenButtons(token);
   }
   
   private _onTokenDelete() {
@@ -203,9 +217,10 @@ export class App {
   private _onSecretSave() {
     const secret = this._current as Secret;
     secret.save();
-
+    
     this._store.saveSecret(secret);
-
+    document.getElementById("tokenLastSaved").innerHTML = Utils.displayDate(secret.saved);
+    
     this._onSaveDiscardSecret(secret);
     this._enableSecretButtons(secret);
   }
@@ -213,6 +228,9 @@ export class App {
   private _onSecretDiscard() {
     const secret = this._current as Secret;
     secret.discard();
+    
+    document.getElementById("publicKey").innerHTML = secret.publicKey ?? "";
+    document.getElementById("privateKey").innerHTML = secret.privateKey ?? "";
 
     this._onSaveDiscardSecret(secret);
     this._enableSecretButtons(secret);
@@ -246,10 +264,10 @@ export class App {
     const secretSelect = document.getElementById(id) as HTMLInputElement;
     
     token.verifySettings.secret = this._secrets.find((secret) => secret.id === secretSelect.value);
-    console.log(token.verifySettings.secret);
 
-    this._renderVerifyTab();
-    this._renderGenerateTab();
+    this._verify(token);
+    this._renderVerifyTab(token);
+    this._renderGenerateTab(token);
   }
 
   private _onDecryptSecretChanged(id: string) {
@@ -258,8 +276,9 @@ export class App {
 
     token.decryptSettings.secret = this._secrets.find((secret) => secret.id === secretSelect.value);
 
-    this._renderDecryptTab();
-    this._renderEncryptTab();
+    this._decrypt(token);
+    this._renderDecryptTab(token);
+    this._renderEncryptTab(token);
   }
 
   private _onAutoSelectVerifyChanged() {
@@ -268,8 +287,9 @@ export class App {
 
     token.verifySettings.autoSelect = autoSelect.checked;
 
-    this._renderVerifyTab();
-    this._renderGenerateTab();
+    this._verify(token);
+    this._renderVerifyTab(token);
+    this._renderGenerateTab(token);
   }
 
   private _onAutoSelectDecryptChanged() {
@@ -278,8 +298,9 @@ export class App {
 
     token.decryptSettings.autoSelect = autoSelect.checked;
 
-    this._renderDecryptTab();
-    this._renderEncryptTab();
+    this._decrypt(token);
+    this._renderDecryptTab(token);
+    this._renderEncryptTab(token);
   }
 
   private _purgeAll() {
@@ -564,36 +585,21 @@ export class App {
     });
   }
 
-  private _renderTabs() {
-    this._renderVerifyTab();
-    this._renderGenerateTab();
-    this._renderDecryptTab();
-    this._renderEncryptTab();
+  private _renderTabs(token: TokenModel) {
+    this._renderVerifyTab(token);
+    this._renderGenerateTab(token);
+    this._renderDecryptTab(token);
+    this._renderEncryptTab(token);
   }
 
-  private _renderVerifyTab() {
-    const token = this._current as TokenModel;
+  private _renderVerifyTab(token: TokenModel) {
     const settings = token.verifySettings;
-    if (settings.autoSelect) {
-      // Find secret
-      settings.secret = this._findVerificationSecret();
-      this._autoSecretSelect("verifySecret", settings.secret?.title);
-    } else {
-      if (!!!settings.secret && this._secrets.length > 0) {
-        settings.secret = this._secrets[0];
-      }
-      this._populateSecretSelect("verifySecret", settings.secret?.id);
-    }
+    this._setSecretSelect("verifySecret", settings.autoSelect, settings.secret);
 
     const autoSelect = document.getElementById("autoSelectVerify") as HTMLInputElement;
     autoSelect.checked = settings.autoSelect;
 
-    const secretValue = document.getElementById("verifySecretValue");
-    if (!!!settings.secret || settings.secret.publicKey === "") {
-      secretValue.innerHTML = "<span class='w3-opacity'>Specify a public key to verify signature</span>";
-    } else {
-      secretValue.innerHTML = settings.secret.publicKey;
-    }
+    this._displaySecretValue("verifySecretValue", settings.secret?.publicKey, "public");
 
     const sourceValue = document.getElementById("sourceValue");
     if (!!!settings.secret) {
@@ -605,51 +611,65 @@ export class App {
     }
 
     const algorithmValue = document.getElementById("algorithmValue");
-    algorithmValue.innerHTML = settings.algorithm;
+    algorithmValue.innerHTML = settings.algorithm ?? "None";
 
     const signatureVerify = document.getElementById("signatureVerify");
-    if ((!!settings.secret && !!!settings.secret.publicKey) || !token.isValid()) {
+    if (settings.verificationResult === null) {
       signatureVerify.innerHTML = `<h3 class="w3-blue signature-verify"><i class="w3-margin-left fa fa-question-circle"></i> Unable to verify signature</h3>`;
-    } else if (!!settings.secret && token.token.verify(settings.secret.publicKey)) {
+    } else if (settings.verificationResult) {
       signatureVerify.innerHTML = `<h3 class="w3-green signature-verify"><i class="w3-margin-left fa fa-check-circle"></i> Signature verified</h3>`;
     } else {
       signatureVerify.innerHTML = `<h3 class="w3-red signature-verify"><i class="w3-margin-left fa fa-times-circle"></i> Invalid signature</h3>`;
     }
   }
   
-  private _renderGenerateTab() {
-    const token = this._current as TokenModel;
+  private _renderGenerateTab(token: TokenModel) {
     const settings = token.verifySettings;
-    if (settings.autoSelect) {
-      this._autoSecretSelect("generateSecret", !!settings.secret ? settings.secret.id : "Could not find appropriate certificate");
-    } else {
-      if (!!settings.secret && this._secrets.length > 0) {
-        settings.secret = this._secrets[0];
-      }
-      this._populateSecretSelect("generateSecret", settings.secret?.id);
-    }    
+    this._setSecretSelect("generateSecret", settings.autoSelect, settings.secret);
+    
+    this._displaySecretValue("generateSecretValue", settings.secret?.privateKey, "private");
+
+    const addExpiry = document.getElementById("addExpiry") as HTMLInputElement;
+    addExpiry.checked = settings.addExpiry;
+
+    const validTime = document.getElementById("validTime") as HTMLInputElement;
+    validTime.value = settings.validTime?.toString() ?? "";
+
+    const validTimeUnit = document.getElementById("validTimeUnit") as HTMLInputElement;
+    validTimeUnit.value = settings.validTimeUnit;
+
+    const algorithmValue = document.getElementById("algorithmValue") as HTMLInputElement;
+    algorithmValue.value = settings.algorithm ?? "None";
   }
   
-  private _renderDecryptTab() {
-    const token = this._current as TokenModel;
+  private _renderDecryptTab(token: TokenModel) {
     const settings = token.decryptSettings;
-    if (settings.autoSelect) {
-      this._autoSecretSelect("decryptSecret", !!settings.secret ? settings.secret.id : "Could not find appropriate certificate");
-    } else {
-      this._populateSecretSelect("decryptSecret", settings.secret?.id);
-    }
+    this._setSecretSelect("decryptSecret", settings.autoSelect, settings.secret);
+
+    this._displaySecretValue("decryptSecretValue", settings.secret?.privateKey, "private");
 
     const autoSelect = document.getElementById("autoSelectDecrypt") as HTMLInputElement;
     autoSelect.checked = settings.autoSelect;
   }
   
-  private _renderEncryptTab() {
-    const token = this._current as TokenModel;
+  private _renderEncryptTab(token: TokenModel) {
     const settings = token.decryptSettings;
-    if (settings.autoSelect) {
-      this._autoSecretSelect("encryptSecret", !!settings.secret ? settings.secret.id : "Could not find appropriate certificate");
+    this._setSecretSelect("encryptSecret", settings.autoSelect, settings.secret);
+
+    this._displaySecretValue("encryptSecretValue", settings.secret?.publicKey, "public");
+
+    const autoEncrypt = document.getElementById("autoEncrypt") as HTMLInputElement;
+    autoEncrypt.checked = settings.autoEncrypt;
+
+    const algorithmValue = document.getElementById("encryptAlgorithm") as HTMLInputElement;
+    algorithmValue.value = settings.algorithm ?? "None";
+  }
+
+  private _setSecretSelect(id: string, autoSelect: boolean, secret: Secret) {
+    if (autoSelect) {
+      this._autoSecretSelect(id, secret?.title);
     } else {
-      this._populateSecretSelect("encryptSecret", settings.secret?.id);
+      this._populateSecretSelect(id, secret?.id);
     }
   }
 
@@ -679,23 +699,28 @@ export class App {
     if (secretSelect.className.indexOf("w3-disabled") === -1) { 
       secretSelect.className += " w3-disabled";
     }
-    secretSelect.innerHTML = `<option value='auto'>${value ?? "Could not find appropriate certificate"}</option>`;
+    secretSelect.innerHTML = `<option value='auto'>${value ?? "Could not find appropriate secret"}</option>`;
+  }
+
+  private _displaySecretValue(id: string, key: string, keyType: string) {
+    const secretValue = document.getElementById(id);
+    if (!!!key) {
+      secretValue.innerHTML = `<span class='w3-opacity'>Specify a ${keyType} key to verify signature</span>`;
+    } else {
+      secretValue.innerHTML = key;
+    }
   }
 
   private _onSaveDiscardToken(token: TokenModel) {
     this._renderTokenTitle(token);
-    document.getElementById("tokenLastSaved").innerHTML = Utils.displayDate(token.saved);
-    document.getElementById("rawToken").innerHTML = this._displayColorCodedToken(token.token.raw);
     this._reRenderToken(token);
-    this._renderTokenDetails(token);
+    this._enableTokenButtons(token);
   }
 
   private _onSaveDiscardSecret(secret: Secret) {
     this._renderSecretTitle(secret);
-    document.getElementById("tokenLastSaved").innerHTML = Utils.displayDate(secret.saved);
-    document.getElementById("publicKey").innerHTML = secret.publicKey ?? "";
-    document.getElementById("privateKey").innerHTML = secret.privateKey ?? "";
     this._reRenderSecret(secret);
+    this._enableSecretButtons(secret);
   }
 
   private _displayColorCodedToken(rawToken: string): string {
@@ -759,21 +784,60 @@ export class App {
   private _populateSelect() {
     const singingAlg = document.getElementById("algorithm");
     for (const alg in SigningAlgorithm) {
-      singingAlg.innerHTML += `<option value='${alg}'>${SigningAlgorithm[alg]}</option>`;
+      singingAlg.innerHTML += `<option value='${SigningAlgorithm[alg]}'>${SigningAlgorithm[alg]}</option>`;
     }
 
     const encryptAlg = document.getElementById("encryptAlgorithm");
     for (const alg in EncryptionAlgorithm) {
-      encryptAlg.innerHTML += `<option value='${alg}'>${EncryptionAlgorithm[alg]}</option>`;
+      encryptAlg.innerHTML += `<option value='${EncryptionAlgorithm[alg]}'>${EncryptionAlgorithm[alg]}</option>`;
     }
 
     const validTimeUnit = document.getElementById("validTimeUnit");
     for (const unit in TimeUnit) {
-      validTimeUnit.innerHTML += `<option value='${unit}'>${TimeUnit[unit]}</option>`;
+      validTimeUnit.innerHTML += `<option value='${TimeUnit[unit]}'>${TimeUnit[unit]}</option>`;
     }
   }
 
-  private _findVerificationSecret(): Secret {
-    return null;
+  private _verify(token: TokenModel) {
+    const settings = token.verifySettings;
+    if (!token.isValid()) {
+      settings.verificationResult = null;
+      settings.algorithm = null;
+    } else {
+      var jwt = token.token as JWT;
+      settings.algorithm = jwt.header["alg"];
+      if (settings.autoSelect) {
+        // Attempt to find a secret
+        // Keep null for now
+        settings.secret = null;
+        settings.verificationResult = false;
+      } else {
+        // Set secret to first secret if none available
+        if (!!!settings.secret && this._secrets.length > 0) {
+          settings.secret = this._secrets[0];
+        }
+        if (!!!settings.secret?.publicKey) {
+          // No public key
+          settings.verificationResult = null;
+        } else {
+          settings.verificationResult = jwt.verify(settings.secret.publicKey);
+        }
+      }
+    }
+  }
+
+  private _decrypt(token: TokenModel) {
+    const settings = token.decryptSettings;
+    if (settings.autoSelect) {
+      // Attempt to find a secret
+      // Keep null for now
+      settings.secret = null;
+    } else {
+      // Set secret to first secret if none available
+      if (!!!settings.secret && this._secrets.length > 0) {
+        settings.secret = this._secrets[0];
+      }
+      // Attempt to decrypt
+    }
   }
 }

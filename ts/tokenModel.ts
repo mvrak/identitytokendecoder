@@ -1,4 +1,5 @@
 import { JWT, Token } from "./token";
+import { Secret } from "./secret";
 import { VerifySettings, DecryptSettings } from "./settings";
 
 // Contains raw token string with metadata including title, 
