@@ -8,8 +8,6 @@ export class Key {
   public publicKey: string;
   public privateKey: string;
 
-  public associatedTokens: Token[];
-
   public url: string;
 
   private _originalTitle: string;

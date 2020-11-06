@@ -29,7 +29,7 @@
 }
 
 .token-box {
-  min-height: 350px;
+  min-height: 375px;
   float: left;
   width: 100%;
 }
@@ -119,7 +119,7 @@
 .tabcontent {
   display: none;
   padding: 10px 12px;
-  min-height: 400px;
+  min-height: 420px;
 }
 
 .tab-key-box {

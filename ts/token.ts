@@ -59,7 +59,7 @@ export class JWT extends Token {
     try {
       JSON.parse(key);
     } catch {
-      if (alg.startsWith("HS")) {
+      if (alg?.startsWith("HS")) {
         key = `{"kty":"oct","k":"${key}"}`;
       } else {
         return false;

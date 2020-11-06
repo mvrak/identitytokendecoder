@@ -107,25 +107,26 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
         </select>
 
         <div class="tab-section">
-           Private key value:
+          Private key value:
           <div class="tab-key-box" contenteditable="false" id="generateKeyValue"></div>
         </div>
+        
+        <div class="tab-section">
+          <lablel for="algorithm" style="float:left; padding-top:5px"><b>Algorithm</b></lablel>
+          <select style="float:right; width:100px" class="w3-select" id="algorithm">
+          </select>
+        </div>
+
         <div class="tab-section">
           <input type="checkbox" id="addExpiry">
           <lablel for="addExpiry">Add issuing/expiry time</lablel>
         </div>
 
-        <div style="float:left; width:100%">
-          <lablel for="validTime" style="float:left; margin-top:10px"><b>Valid for</b></lablel>
+        <div class="tab-section">
+          <lablel for="validTime" style="float:left; padding-top:5px"><b>Valid for</b></lablel>
           <select style="float:right; width:50px" class="w3-select" id="validTimeUnit">
           </select>
-          <input type="number" id="validTime" style="float:right; width:75px; margin-top:10px; margin-right: 5px">
-        </div>
-
-        <div style="float:left; width:100%">
-          <lablel for="algorithm" style="float:left; margin-top:10px"><b>Algorithm</b></lablel>
-          <select style="float:right; width:100px" class="w3-select" id="algorithm">
-          </select>
+          <input class="w3-input" type="number" id="validTime" style="float:right; width:75px; margin-right: 5px">
         </div>
 
         <div class="tab-section">

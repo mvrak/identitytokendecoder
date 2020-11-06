@@ -36,7 +36,7 @@ export class VerifySettings {
     this.autoSelect = true;
 
     this.addExpiry = false;
-    this.validTime = null;
+    this.validTime = 300;
     this.validTimeUnit = TimeUnit.Second;
 
     this.verificationResult = null;

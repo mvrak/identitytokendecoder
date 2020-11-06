@@ -5,7 +5,6 @@ import { SigningAlgorithm, EncryptionAlgorithm, JWT, Token } from "./token";
 import { TokenModel } from "./tokenModel";
 import * as Claims from "./claims";
 import * as Utils from "./utils";
-import { tokenToString } from "typescript";
 
 export class App {
   private static readonly maxTokenMenuLength: number = 35;
@@ -65,7 +64,8 @@ export class App {
     this._highlightMenuItem(token.id);
     this._current = token;
 
-    
+    this._expandMenu("tokens");
+
     document.getElementById("tokensDisplay").style.display = "block";
     document.getElementById("keysDisplay").style.display = "none";
     
@@ -85,7 +85,9 @@ export class App {
   private _displayKey(key: Key) {
     this._highlightMenuItem(key.id);
     this._current = key;
-    
+
+    this._expandMenu("keys");
+
     document.getElementById("tokensDisplay").style.display = "none";
     document.getElementById("keysDisplay").style.display = "block";
 
@@ -242,7 +244,18 @@ export class App {
   
   private _onKeyDelete() {
     const key = this._current as Key;
-    
+
+    // Clear settings where this key is the key
+    this._tokens.forEach((token) => {
+      if (token.verifySettings.key === key) {
+        token.verifySettings.key = null;
+      }
+
+      if (token.decryptSettings.key === key) {
+        token.decryptSettings.key = null;
+      }
+    });
+
     let index = this._keys.indexOf(key);
     this._keys.splice(index, 1);
     
@@ -326,6 +339,68 @@ export class App {
     
     const key = settings.key;
     this._displayKey(key);
+  }
+
+  private _onAddExpiryChanged() {
+    const token = this._current as TokenModel;
+    const settings = token.verifySettings;
+
+    const addExpiry = document.getElementById("addExpiry") as HTMLInputElement;
+    settings.addExpiry = addExpiry.checked;
+
+    this._renderGenerateTab(token);
+  }
+
+  private _onValidTimeChanged() {
+    const token = this._current as TokenModel;
+    const settings = token.verifySettings;
+
+    const validTime = document.getElementById("validTime") as HTMLInputElement;
+    settings.validTime = parseFloat(validTime.value);
+
+    this._renderGenerateTab(token);
+  }
+
+  private _onValidTimeUnitChanged() {
+    const token = this._current as TokenModel;
+    const settings = token.verifySettings;
+
+    const validTimeUnit = document.getElementById("validTimeUnit") as HTMLInputElement;
+    settings.validTimeUnit = validTimeUnit.value as TimeUnit;
+
+    this._renderGenerateTab(token);
+  }
+
+  private _onAlgorithmChanged() {
+    const token = this._current as TokenModel;
+    const settings = token.verifySettings;
+
+    const validTime = document.getElementById("validTime") as HTMLInputElement;
+    settings.validTime = parseFloat(validTime.value);
+
+    this._generate(token)
+      .then(() => this._verify(token))
+      .then(() => {
+        this._renderVerifyTab(token);
+        this._renderGenerateTab(token);
+      });
+  }
+
+  private async _onCopy() {
+    const token = this._current as TokenModel;
+
+    await navigator.clipboard.writeText(token.token.raw);
+  }
+
+  private async _onGenerate() {
+    const token = this._current as TokenModel;
+
+    this._generate(token)
+    .then(() => this._verify(token))
+    .then(() => {
+      this._renderVerifyTab(token);
+      this._renderGenerateTab(token);
+    });
   }
 
   private _purgeAll() {
@@ -429,6 +504,11 @@ export class App {
     document.getElementById("decryptKey").addEventListener('input', () => this._onDecryptKeyChanged("decryptKey"));
     document.getElementById("encryptKey").addEventListener('input', () => this._onDecryptKeyChanged("encryptKey"));
 
+    document.getElementById("addExpiry").addEventListener('input', () => this._onAddExpiryChanged());
+    document.getElementById("validTime").addEventListener('input', () => this._onValidTimeChanged());
+    document.getElementById("validTimeUnit").addEventListener('input', () => this._onValidTimeUnitChanged());
+    document.getElementById("algorithm").addEventListener('input', () => this._onAlgorithmChanged());
+
     document.getElementById("verifyEditKey").addEventListener('click', () => this._onEditKeyVerify());
     document.getElementById("generateEditKey").addEventListener('click', () => this._onEditKeyVerify());
     document.getElementById("decryptEditKey").addEventListener('click', () => this._onEditKeyDecrypt());
@@ -438,6 +518,10 @@ export class App {
     document.getElementById("generateNewKey").addEventListener('click', () => this._newKey());
     document.getElementById("decryptNewKey").addEventListener('click', () => this._newKey());
     document.getElementById("encryptNewKey").addEventListener('click', () => this._newKey());
+
+    document.getElementById("generateBtn").addEventListener('click', () => this._onGenerate());
+    document.getElementById("generateCopyBtn").addEventListener('click', () => this._onCopy());
+    document.getElementById("decryptCopyBtn").addEventListener('click', () => this._onCopy());
   }
 
   private _highlightMenuItem(id: string) {
@@ -549,7 +633,7 @@ export class App {
   private _renderTokenInner(token: TokenModel): string {
     return `<div class="w3-container">
       <i class="w3-margin-right fa fa-id-card-o"></i><span class="w3-opacity w3-large">${token.dirtyTitle()}</span>
-      <h6 class="w3-opacity">${Utils.displayDateMenu(token.saved)}</h6>
+      <h6 class="w3-opacity"><i class="fa fa-clock-o "></i> ${Utils.displayDateMenu(token.saved)}</h6>
       <p>${this._displayColorCodedToken(this._truncate(token.token.raw))}</p>
     </div>`; 
   }
@@ -557,7 +641,7 @@ export class App {
   private _renderKeyInner(key: Key): string {
     return `<div class="w3-container">
       <i class="w3-margin-right fa fa-id-card-o"></i><span class="w3-opacity w3-large">${key.dirtyTitle()}</span>
-      <h6 class="w3-opacity">${Utils.displayDateMenu(key.saved)}</h6>
+      <h6 class="w3-opacity"><i class="fa fa-clock-o "></i> ${Utils.displayDateMenu(key.saved)}</h6>
       <p>${this._truncate(key.publicKey)}</p>
     </div>`;
   }
@@ -632,7 +716,7 @@ export class App {
     const autoSelect = document.getElementById("autoSelectVerify") as HTMLInputElement;
     autoSelect.checked = settings.autoSelect;
 
-    this._displayKeyValue("verifyKeyValue", settings.key?.publicKey, "public");
+    this._displayKeyValue("verifyKeyValue", settings.key?.publicKey, "Specify a public key to verify signature");
 
     const sourceValue = document.getElementById("sourceValue");
     if (!!!settings.key) {
@@ -662,19 +746,28 @@ export class App {
     this._enableButton("generateEditKey", !!settings.key && !!!settings.key.url);
     this._setKeySelect("generateKey", settings.autoSelect, settings.key);
     
-    this._displayKeyValue("generateKeyValue", settings.key?.privateKey, "private");
+    let privateKey = settings.key?.privateKey;
+    if (!!!privateKey) {
+      privateKey = settings.algorithm?.startsWith("HS") ? settings.key?.publicKey : "";
+    }
+
+    this._displayKeyValue("generateKeyValue", privateKey, "Specify a private key to generate signature");
+    
+    const algorithmSelect = document.getElementById("algorithm") as HTMLInputElement;
+    algorithmSelect.value = settings.algorithm ?? "None";
 
     const addExpiry = document.getElementById("addExpiry") as HTMLInputElement;
     addExpiry.checked = settings.addExpiry;
 
     const validTime = document.getElementById("validTime") as HTMLInputElement;
     validTime.value = settings.validTime?.toString() ?? "";
+    validTime.disabled = !settings.addExpiry;
 
     const validTimeUnit = document.getElementById("validTimeUnit") as HTMLInputElement;
     validTimeUnit.value = settings.validTimeUnit;
+    validTimeUnit.disabled = !settings.addExpiry;
 
-    const algorithmValue = document.getElementById("algorithmValue") as HTMLInputElement;
-    algorithmValue.value = settings.algorithm ?? "None";
+    this._enableButton("generateBtn", !!privateKey);
   }
   
   private _renderDecryptTab(token: TokenModel) {
@@ -683,7 +776,7 @@ export class App {
     this._enableButton("decryptEditKey", !!settings.key && !!!settings.key.url);
     this._setKeySelect("decryptKey", settings.autoSelect, settings.key);
 
-    this._displayKeyValue("decryptKeyValue", settings.key?.privateKey, "private");
+    this._displayKeyValue("decryptKeyValue", settings.key?.privateKey, "Specify a private key to decrypt token");
 
     const autoSelect = document.getElementById("autoSelectDecrypt") as HTMLInputElement;
     autoSelect.checked = settings.autoSelect;
@@ -695,7 +788,7 @@ export class App {
     this._enableButton("encryptEditKey", !!settings.key && !!!settings.key.url);
     this._setKeySelect("encryptKey", settings.autoSelect, settings.key);
 
-    this._displayKeyValue("encryptKeyValue", settings.key?.publicKey, "public");
+    this._displayKeyValue("encryptKeyValue", settings.key?.publicKey, "Specify a public key to encrypt token");
 
     const autoEncrypt = document.getElementById("autoEncrypt") as HTMLInputElement;
     autoEncrypt.checked = settings.autoEncrypt;
@@ -741,10 +834,10 @@ export class App {
     keySelect.innerHTML = `<option value='auto'>${value ?? "Could not find appropriate key"}</option>`;
   }
 
-  private _displayKeyValue(id: string, key: string, keyType: string) {
+  private _displayKeyValue(id: string, key: string, emptyMessage: string) {
     const keyValue = document.getElementById(id);
     if (!!!key) {
-      keyValue.innerHTML = `<span class='w3-opacity'>Specify a ${keyType} key to verify signature</span>`;
+      keyValue.innerHTML = `<span class='w3-opacity'>${emptyMessage}</span>`;
     } else {
       keyValue.innerHTML = Utils.parseKey(key, "<br>");
     }
@@ -840,6 +933,11 @@ export class App {
   private async _verify(token: TokenModel) {
     const settings = token.verifySettings;
     if (!token.isValid()) {
+      if (settings.autoSelect) {
+        settings.key = null;
+      } else if (!!!settings.key && this._keys.length > 0) {
+        settings.key = this._keys[0];
+      }
       settings.verificationResult = "Unable to verify - token invalid";
       settings.algorithm = null;
     } else {
@@ -867,6 +965,9 @@ export class App {
         }
       }
     }
+  }
+
+  private async _generate(token: TokenModel) {
   }
 
   private async _decrypt(token: TokenModel) {

@@ -134,10 +134,8 @@ export const claimTypeDescriptions = {
 
 export function getIssuerDetails(iss: string): string {
   // TODO: Figure out how to determine issuer for more issuers
-  if (!!iss) {
-    if (iss.startsWith("https://sts.windows.net")) {
-      return "aad";
-    }
+  if (iss?.startsWith("https://sts.windows.net")) {
+    return "aad";
   }
   return null;
 }
