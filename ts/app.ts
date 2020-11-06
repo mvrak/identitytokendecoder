@@ -1,4 +1,4 @@
-import { Secret } from "./secret";
+import { Key } from "./key";
 import { SettingsTab, TimeUnit } from "./settings";
 import { Store } from "./store";
 import { SigningAlgorithm, EncryptionAlgorithm, JWT, Token } from "./token";
@@ -24,9 +24,9 @@ export class App {
   ];
 
   private _tokens: TokenModel[];
-  private _secrets: Secret[];
+  private _keys: Key[];
 
-  private _current: TokenModel | Secret;
+  private _current: TokenModel | Key;
 
   private _settingsTab: SettingsTab;
 
@@ -37,15 +37,15 @@ export class App {
 
     // TODO: Do token retrieval from local storage
     // const storedValues = this._storage.retrieveAll();
-    // [this._tokens, this._secrets] = storedValues[0];
+    // [this._tokens, this._keys] = storedValues[0];
 
     this._tokens = [
-      new TokenModel("token1", "Sample Token", new Date("1 November, 2020"), "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3ODZlZmY0OS00OWQ2LTQ4YjQtODM4NC0yYTA5NDYxODJmN2YiLCJ2YWxpZCI6IjEiLCJ1c2VyaWQiOiIxIiwibmFtZSI6ImJpbGFsIiwiZXhwIjoxNTcwNjMwMzMwLCJpc3MiOiJodHRwOi8vbXlzaXRlLmNvbSIsImF1ZCI6Imh0dHA6Ly9teXNpdGUuY29tIn0.06vzYfiSpj1X9s0-CL2nE7NH4LloASMikZCNfHIJ8tY"),
+      new TokenModel("token1", "Sample Token", new Date("1 November, 2020"), "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.GCy21r1m_iGRo7ihyi5vhgvBnQe1uGtLHpE7aUcUEfE"),
       new TokenModel("token2", "Sample Token 2", new Date("1 November, 2020"), "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c")
     ];
     
-    this._secrets = [
-      new Secret("secret1", "Sample Key", new Date("1 November, 2020"), "IUzI1NiIsInR5cCI6IkpXVCJ9")
+    this._keys = [
+      new Key("key1", "Sample Key", new Date("1 November, 2020"), "vFfSurgM7hZIkirsjn8IFhJ3optS_GCecC-_qGfhMRQ")
     ];
 
     this._settingsTab = SettingsTab.Verify;
@@ -54,7 +54,7 @@ export class App {
     this._registerCallbacks();
 
     this._renderTokens();
-    this._renderSecrets();
+    this._renderKeys();
     
     this._expandMenu("tokens");
 
@@ -65,36 +65,37 @@ export class App {
     this._highlightMenuItem(token.id);
     this._current = token;
 
-    this._verify(token);
-    this._decrypt(token);
     
     document.getElementById("tokensDisplay").style.display = "block";
-    document.getElementById("secretsDisplay").style.display = "none";
+    document.getElementById("keysDisplay").style.display = "none";
     
     this._renderTokenTitle(token);
     document.getElementById("tokenLastSaved").innerHTML = Utils.displayDate(token.saved);
     document.getElementById("rawToken").innerHTML = this._displayColorCodedToken(token.token.raw);
     
     this._renderTokenDetails(token);
-    this._renderTabs(token);
-    this._openTab(this._settingsTab);
     this._enableTokenButtons(token);
+    this._openTab(this._settingsTab);
+    
+    this._verify(token)
+      .then(() => this._decrypt(token))
+      .then(() => this._renderTabs(token));
   }
   
-  private _displaySecret(secret: Secret) {
-    this._highlightMenuItem(secret.id);
-    this._current = secret;
+  private _displayKey(key: Key) {
+    this._highlightMenuItem(key.id);
+    this._current = key;
     
     document.getElementById("tokensDisplay").style.display = "none";
-    document.getElementById("secretsDisplay").style.display = "block";
+    document.getElementById("keysDisplay").style.display = "block";
 
-    this._renderSecretTitle(secret);
-    document.getElementById("secretLastSaved").innerHTML = Utils.displayDate(secret.saved);
-    document.getElementById("publicKey").innerHTML = secret.publicKey ?? "";
-    document.getElementById("privateKey").innerHTML = secret.privateKey ?? "";
+    this._renderKeyTitle(key);
+    document.getElementById("keyLastSaved").innerHTML = Utils.displayDate(key.saved);
+    document.getElementById("publicKey").innerHTML = Utils.parseKey(key.publicKey ?? "", "<br>");
+    document.getElementById("privateKey").innerHTML = Utils.parseKey(key.privateKey ?? "", "<br>");
 
     // Enable/disable buttons
-    this._enableSecretButtons(secret);
+    this._enableKeyButtons(key);
   }
   
   private _newToken() {
@@ -105,12 +106,12 @@ export class App {
     this._displayToken(newToken);
   }
 
-  private _newSecret() {
-    const id = this._getNewSecretId();
-    const newSecret = new Secret(id, "New Secret");
-    this._secrets.push(newSecret);
-    this._renderNewSecret(newSecret);
-    this._displaySecret(newSecret);
+  private _newKey() {
+    const id = this._getNewKeyId();
+    const newKey = new Key(id, "New Key");
+    this._keys.push(newKey);
+    this._renderNewKey(newKey);
+    this._displayKey(newKey);
   }
 
   private _onTokenChange() {
@@ -120,35 +121,36 @@ export class App {
     const token = this._current as TokenModel;
     token.setToken(tokenString);
 
-    this._verify(token);
-    this._decrypt(token);
-
+    
     this._renderTokenTitle(token);
     rawTokenDiv.innerHTML = this._displayColorCodedToken(tokenString);
     this._renderTokenDetails(token);
     this._reRenderToken(token);
-    this._renderTabs(token);
     
     // Enable/disable buttons
     this._enableTokenButtons(token);
+
+    this._verify(token)
+      .then(() => this._decrypt(token))
+      .then(() => this._renderTabs(token));
   }
 
-  private _onSecretChange() {
+  private _onKeyChange() {
     const publicKeyDiv = document.getElementById("publicKey");
     const privateKeyDiv = document.getElementById("privateKey");
     
     const publicKey = publicKeyDiv.textContent;
     const privateKey = privateKeyDiv.textContent;
 
-    const secret = this._current as Secret;
-    secret.publicKey = publicKey;
-    secret.privateKey = privateKey;
+    const key = this._current as Key;
+    key.publicKey = publicKey;
+    key.privateKey = privateKey;
 
-    this._renderSecretTitle(secret);
-    this._reRenderSecret(secret);
+    this._renderKeyTitle(key);
+    this._reRenderKey(key);
 
     // Enable/disable buttons
-    this._enableSecretButtons(secret);
+    this._enableKeyButtons(key);
   }
 
   private _onTokenTitleChange() {
@@ -162,15 +164,15 @@ export class App {
     this._enableTokenButtons(token);
   }
 
-  private _onSecretTitleChange() {
-    const secret = this._current as Secret;
-    const secretTitle = document.getElementById("secretTitle");
+  private _onKeyTitleChange() {
+    const key = this._current as Key;
+    const keyTitle = document.getElementById("keyTitle");
     
-    secret.title = secretTitle.textContent;
+    key.title = keyTitle.textContent;
 
-    document.getElementById("secretDirty").innerHTML = secret.isDirty() ? "*" : "";
-    this._reRenderSecret(secret);
-    this._enableSecretButtons(secret);
+    document.getElementById("keyDirty").innerHTML = key.isDirty() ? "*" : "";
+    this._reRenderKey(key);
+    this._enableKeyButtons(key);
   }
 
   private _onTokenSave() {
@@ -187,14 +189,14 @@ export class App {
     const token = this._current as TokenModel;
     token.discard();
 
-    this._verify(token);
-    this._decrypt(token);
-
     document.getElementById("rawToken").innerHTML = this._displayColorCodedToken(token.token.raw);
     this._renderTokenDetails(token);
-    this._renderTabs(token);
-
     this._onSaveDiscardToken(token);
+
+    this._verify(token)
+      .then(() => this._decrypt(token))
+      .then(() => this._renderTabs(token));
+
   }
   
   private _onTokenDelete() {
@@ -214,71 +216,75 @@ export class App {
     }
   }
 
-  private _onSecretSave() {
-    const secret = this._current as Secret;
-    secret.save();
+  private _onKeySave() {
+    const key = this._current as Key;
+    key.save();
     
-    this._store.saveSecret(secret);
-    document.getElementById("tokenLastSaved").innerHTML = Utils.displayDate(secret.saved);
+    this._store.saveKey(key);
+    document.getElementById("tokenLastSaved").innerHTML = Utils.displayDate(key.saved);
     
-    this._onSaveDiscardSecret(secret);
-    this._enableSecretButtons(secret);
+    this._onSaveDiscardKey(key);
+    this._enableKeyButtons(key);
   }
   
-  private _onSecretDiscard() {
-    const secret = this._current as Secret;
-    secret.discard();
+  private _onKeyDiscard() {
+    const key = this._current as Key;
+    key.discard();
     
-    document.getElementById("publicKey").innerHTML = secret.publicKey ?? "";
-    document.getElementById("privateKey").innerHTML = secret.privateKey ?? "";
+    document.getElementById("publicKey").innerHTML = Utils.parseKey(key.publicKey ?? "", "<br>");
+    document.getElementById("privateKey").innerHTML = Utils.parseKey(key.privateKey ?? "", "<br>");
 
-    this._onSaveDiscardSecret(secret);
-    this._enableSecretButtons(secret);
+    this._onSaveDiscardKey(key);
+    this._enableKeyButtons(key);
   }
   
-  private _onSecretDelete() {
-    const secret = this._current as Secret;
+  private _onKeyDelete() {
+    const key = this._current as Key;
     
-    let index = this._secrets.indexOf(secret);
-    this._secrets.splice(index, 1);
+    let index = this._keys.indexOf(key);
+    this._keys.splice(index, 1);
     
-    this._renderSecrets();
-    if (this._secrets.length > 0) {
-      if (index >= this._secrets.length) {
-        index = this._secrets.length - 1;
+    this._renderKeys();
+    if (this._keys.length > 0) {
+      if (index >= this._keys.length) {
+        index = this._keys.length - 1;
       }
-      this._displaySecret(this._secrets[index]);
+      this._displayKey(this._keys[index]);
     } else {
       this._displayToken(this._tokens[0]);
     }
   }
 
-  private _onSecretFetch() {
+  private _onKeyFetch() {
   }
 
-  private _onSecretUpload() {
+  private _onKeyUpload() {
   }
 
-  private _onVerifySecretChanged(id: string) {
+  private _onVerifyKeyChanged(id: string) {
     const token = this._current as TokenModel;
-    const secretSelect = document.getElementById(id) as HTMLInputElement;
+    const keySelect = document.getElementById(id) as HTMLInputElement;
     
-    token.verifySettings.secret = this._secrets.find((secret) => secret.id === secretSelect.value);
+    token.verifySettings.key = this._keys.find((key) => key.id === keySelect.value);
 
-    this._verify(token);
-    this._renderVerifyTab(token);
-    this._renderGenerateTab(token);
+    this._verify(token)
+      .then(() => this._decrypt(token))
+      .then(() => {
+        this._renderVerifyTab(token);
+        this._renderGenerateTab(token);
+      });
   }
 
-  private _onDecryptSecretChanged(id: string) {
+  private _onDecryptKeyChanged(id: string) {
     const token = this._current as TokenModel;
-    const secretSelect = document.getElementById(id) as HTMLInputElement;
+    const keySelect = document.getElementById(id) as HTMLInputElement;
 
-    token.decryptSettings.secret = this._secrets.find((secret) => secret.id === secretSelect.value);
+    token.decryptSettings.key = this._keys.find((key) => key.id === keySelect.value);
 
-    this._decrypt(token);
-    this._renderDecryptTab(token);
-    this._renderEncryptTab(token);
+    this._decrypt(token).then(() => {
+      this._renderDecryptTab(token);
+      this._renderEncryptTab(token);
+    });
   }
 
   private _onAutoSelectVerifyChanged() {
@@ -287,9 +293,10 @@ export class App {
 
     token.verifySettings.autoSelect = autoSelect.checked;
 
-    this._verify(token);
-    this._renderVerifyTab(token);
-    this._renderGenerateTab(token);
+    this._verify(token).then(() => {
+      this._renderVerifyTab(token);
+      this._renderGenerateTab(token);
+    });
   }
 
   private _onAutoSelectDecryptChanged() {
@@ -305,11 +312,11 @@ export class App {
 
   private _purgeAll() {
     this._tokens = [];
-    this._secrets = [];
+    this._keys = [];
     this._settingsTab = SettingsTab.Verify;
     this._store.purgeLocalStorage();
     this._renderTokens();
-    this._renderSecrets();
+    this._renderKeys();
     this._newToken();
   }
 
@@ -359,8 +366,8 @@ export class App {
 
     document.getElementById("rawToken").addEventListener('input', () => this._onTokenChange());
 
-    document.getElementById("publicKey").addEventListener('input', () => this._onSecretChange());
-    document.getElementById("privateKey").addEventListener('input', () => this._onSecretChange());
+    document.getElementById("publicKey").addEventListener('input', () => this._onKeyChange());
+    document.getElementById("privateKey").addEventListener('input', () => this._onKeyChange());
 
     document.getElementById("verify-btn").addEventListener('click', () => this._openTab(SettingsTab.Verify));
     document.getElementById("generate-btn").addEventListener('click', () => this._openTab(SettingsTab.Generate));
@@ -368,33 +375,33 @@ export class App {
     document.getElementById("encrypt-btn").addEventListener('click', () => this._openTab(SettingsTab.Encrypt));
 
     document.getElementById("newToken").addEventListener('click', () => this._newToken());
-    document.getElementById("newSecret").addEventListener('click', () => this._newSecret());
+    document.getElementById("newKey").addEventListener('click', () => this._newKey());
     
     document.getElementById("tokenTitle").addEventListener('input', () => this._onTokenTitleChange());
-    document.getElementById("secretTitle").addEventListener('input', () => this._onSecretTitleChange());
+    document.getElementById("keyTitle").addEventListener('input', () => this._onKeyTitleChange());
 
     document.getElementById("tokenSave").addEventListener('click', () => this._onTokenSave());
     document.getElementById("tokenDiscard").addEventListener('click', () => this._onTokenDiscard());
     document.getElementById("tokenDelete").addEventListener('click', () => this._onTokenDelete());
 
-    document.getElementById("secretSave").addEventListener('click', () => this._onSecretSave());
-    document.getElementById("secretDiscard").addEventListener('click', () => this._onSecretDiscard());
-    document.getElementById("secretDelete").addEventListener('click', () => this._onSecretDelete());
-    document.getElementById("secretFetch").addEventListener('click', () => this._onSecretFetch());
-    document.getElementById("secretUpload").addEventListener('click', () => this._onSecretDelete());
+    document.getElementById("keySave").addEventListener('click', () => this._onKeySave());
+    document.getElementById("keyDiscard").addEventListener('click', () => this._onKeyDiscard());
+    document.getElementById("keyDelete").addEventListener('click', () => this._onKeyDelete());
+    document.getElementById("keyFetch").addEventListener('click', () => this._onKeyFetch());
+    document.getElementById("keyUpload").addEventListener('click', () => this._onKeyDelete());
 
     document.getElementById("tokensBtn").addEventListener('click', () => this._expandMenu("tokens"));
-    document.getElementById("secretsBtn").addEventListener('click', () => this._expandMenu("secrets"));
+    document.getElementById("keysBtn").addEventListener('click', () => this._expandMenu("keys"));
 
     document.getElementById("confirmPurge").addEventListener('click', () => this._purgeAll());
 
     document.getElementById("autoSelectVerify").addEventListener('input', () => this._onAutoSelectVerifyChanged());
     document.getElementById("autoSelectDecrypt").addEventListener('input', () => this._onAutoSelectDecryptChanged());
     
-    document.getElementById("verifySecret").addEventListener('input', () => this._onVerifySecretChanged("verifySecret"));
-    document.getElementById("generateSecret").addEventListener('input', () => this._onVerifySecretChanged("verifySecret"));
-    document.getElementById("decryptSecret").addEventListener('input', () => this._onDecryptSecretChanged("decryptSecret"));
-    document.getElementById("encryptSecret").addEventListener('input', () => this._onDecryptSecretChanged("encryptSecret"));
+    document.getElementById("verifyKey").addEventListener('input', () => this._onVerifyKeyChanged("verifyKey"));
+    document.getElementById("generateKey").addEventListener('input', () => this._onVerifyKeyChanged("verifyKey"));
+    document.getElementById("decryptKey").addEventListener('input', () => this._onDecryptKeyChanged("decryptKey"));
+    document.getElementById("encryptKey").addEventListener('input', () => this._onDecryptKeyChanged("encryptKey"));
   }
 
   private _highlightMenuItem(id: string) {
@@ -413,9 +420,9 @@ export class App {
     document.getElementById("tokenDirty").innerHTML = token.isDirty() ? "*" : "";
   }
 
-  private _renderSecretTitle(secret: Secret) {
-    document.getElementById("secretTitle").innerHTML = secret.title;
-    document.getElementById("secretDirty").innerHTML = secret.isDirty() ? "*" : "";
+  private _renderKeyTitle(key: Key) {
+    document.getElementById("keyTitle").innerHTML = key.title;
+    document.getElementById("keyDirty").innerHTML = key.isDirty() ? "*" : "";
   }
 
   private _renderTokenDetails(token: TokenModel) {
@@ -423,47 +430,35 @@ export class App {
     const tokenMessage = document.getElementById("tokenMessage");
     const claimsTable = document.getElementById("claimsTable");
 
-    if (!token.token.raw) {
-      decodedToken.innerHTML = "";
-      claimsTable.innerHTML = `<table class="w3-table-all">
-      <tr>
-        <th width="20%">Claim type</th>
-        <th width="30%">Value</th>
-        <th width="50%">Notes</th>
-      </tr>
-      </table>`;
-      tokenMessage.innerHTML = "";
+    if (token.isValid()) {
+      const jwt = token.token as JWT;
+      decodedToken.innerHTML = this._displayDecodedToken(jwt);
+      claimsTable.innerHTML = this._displayClaimsTable(jwt);
+
+      const issuer = Claims.getIssuerDetails(jwt.payload["iss"]);
+      if (!!issuer) {
+        tokenMessage.innerHTML = Claims.issuingProviderDescriptions[issuer];
+      } else {
+        tokenMessage.innerHTML = "This token is valid";
+      }
     } else {
-      if (token.isValid()) {
-        const jwt = token.token as JWT;
+      tokenMessage.innerHTML = token.tokenParseError ? `<span class="w3-text-red">${token.tokenParseError}</span>` : "";
+      
+      const jwt = token.lastValid as JWT;
+      
+      if (!!jwt) {
         decodedToken.innerHTML = this._displayDecodedToken(jwt);
         claimsTable.innerHTML = this._displayClaimsTable(jwt);
-  
-        const issuer = Claims.getIssuerDetails(jwt.payload["iss"]);
-        if (!!issuer) {
-          tokenMessage.innerHTML = Claims.issuingProviderDescriptions[issuer];
-        } else {
-          tokenMessage.innerHTML = "This token is valid";
-        }
       } else {
-        tokenMessage.innerHTML = `<span class="w3-text-red">${token.tokenParseError}</span>`;
-        
-        const jwt = token.lastValid as JWT;
-        
-        if (!!jwt) {
-          decodedToken.innerHTML = this._displayDecodedToken(jwt);
-          claimsTable.innerHTML = this._displayClaimsTable(jwt);
-        } else {
-          decodedToken.innerHTML = "";
-          claimsTable.innerHTML = `<table class="w3-table-all">
-          <tr>
-            <th width="20%">Claim type</th>
-            <th width="30%">Value</th>
-            <th width="50%">Notes</th>
-          </tr>
-          </table>`;
-          tokenMessage.innerHTML = "";
-        }
+        decodedToken.innerHTML = "";
+        claimsTable.innerHTML = `<table class="w3-table-all">
+        <tr>
+          <th width="20%">Claim type</th>
+          <th width="30%">Value</th>
+          <th width="50%">Notes</th>
+        </tr>
+        </table>`;
+        tokenMessage.innerHTML = "";
       }
     }
   }
@@ -509,9 +504,9 @@ export class App {
     </a>`; 
   }
   
-  private _renderSecret(secret: Secret): string {
-    return `<a href="javascript:void(0)" class="w3-bar-item w3-button w3-border-bottom menu w3-hover-light-grey" id="${secret.id}">
-    ${this._renderSecretInner(secret)}
+  private _renderKey(key: Key): string {
+    return `<a href="javascript:void(0)" class="w3-bar-item w3-button w3-border-bottom menu w3-hover-light-grey" id="${key.id}">
+    ${this._renderKeyInner(key)}
     </a>`;
   }
 
@@ -523,11 +518,11 @@ export class App {
     </div>`; 
   }
   
-  private _renderSecretInner(secret: Secret): string {
+  private _renderKeyInner(key: Key): string {
     return `<div class="w3-container">
-      <i class="w3-margin-right fa fa-id-card-o"></i><span class="w3-opacity w3-large">${secret.dirtyTitle()}</span>
-      <h6 class="w3-opacity">${Utils.displayDateMenu(secret.saved)}</h6>
-      <p>${secret.publicKey}</p>
+      <i class="w3-margin-right fa fa-id-card-o"></i><span class="w3-opacity w3-large">${key.dirtyTitle()}</span>
+      <h6 class="w3-opacity">${Utils.displayDateMenu(key.saved)}</h6>
+      <p>${this._truncate(key.publicKey)}</p>
     </div>`;
   }
 
@@ -542,15 +537,15 @@ export class App {
     this._addTokenEventListeners();
   }
   
-  private _renderSecrets() {
-    const secretsDiv = document.getElementById("secrets");
-    secretsDiv.innerHTML = "";
+  private _renderKeys() {
+    const keysDiv = document.getElementById("keys");
+    keysDiv.innerHTML = "";
 
-    this._secrets.forEach(secret => {
-      secretsDiv.innerHTML += this._renderSecret(secret);
+    this._keys.forEach(key => {
+      keysDiv.innerHTML += this._renderKey(key);
     });
 
-    this._addSecretEventListeners();
+    this._addKeyEventListeners();
   }
 
   private _renderNewToken(token: TokenModel) {
@@ -559,18 +554,18 @@ export class App {
     this._addTokenEventListeners();
   }
   
-  private _renderNewSecret(secret: Secret) {
-    const secretsDiv = document.getElementById("secrets");
-    secretsDiv.innerHTML += this._renderSecret(secret);
-    this._addSecretEventListeners();
+  private _renderNewKey(key: Key) {
+    const keysDiv = document.getElementById("keys");
+    keysDiv.innerHTML += this._renderKey(key);
+    this._addKeyEventListeners();
   }
 
   private _reRenderToken(token: TokenModel) {
     document.getElementById(token.id).innerHTML = this._renderTokenInner(token);
   }
 
-  private _reRenderSecret(secret: Secret) {
-    document.getElementById(secret.id).innerHTML = this._renderSecretInner(secret);
+  private _reRenderKey(key: Key) {
+    document.getElementById(key.id).innerHTML = this._renderKeyInner(key);
   }
 
   private _addTokenEventListeners() {
@@ -579,9 +574,9 @@ export class App {
     });
   }
 
-  private _addSecretEventListeners() {
-    this._secrets.forEach(secret => {
-      document.getElementById(secret.id).addEventListener('click', () => this._displaySecret(secret));
+  private _addKeyEventListeners() {
+    this._keys.forEach(key => {
+      document.getElementById(key.id).addEventListener('click', () => this._displayKey(key));
     });
   }
 
@@ -594,40 +589,40 @@ export class App {
 
   private _renderVerifyTab(token: TokenModel) {
     const settings = token.verifySettings;
-    this._setSecretSelect("verifySecret", settings.autoSelect, settings.secret);
+    this._setKeySelect("verifyKey", settings.autoSelect, settings.key);
 
     const autoSelect = document.getElementById("autoSelectVerify") as HTMLInputElement;
     autoSelect.checked = settings.autoSelect;
 
-    this._displaySecretValue("verifySecretValue", settings.secret?.publicKey, "public");
+    this._displayKeyValue("verifyKeyValue", settings.key?.publicKey, "public");
 
     const sourceValue = document.getElementById("sourceValue");
-    if (!!!settings.secret) {
+    if (!!!settings.key) {
       sourceValue.innerHTML = "None";
-    } else if (!!!settings.secret.url) {
-      sourceValue.innerHTML = "Secret Store";
+    } else if (!!!settings.key.url) {
+      sourceValue.innerHTML = "Key Store";
     } else {
-      sourceValue.innerHTML = `<a href="${settings.secret.url}">${settings.secret.url}</a>`
+      sourceValue.innerHTML = `<a href="${settings.key.url}">${settings.key.url}</a>`
     }
 
     const algorithmValue = document.getElementById("algorithmValue");
     algorithmValue.innerHTML = settings.algorithm ?? "None";
 
     const signatureVerify = document.getElementById("signatureVerify");
-    if (settings.verificationResult === null) {
-      signatureVerify.innerHTML = `<h3 class="w3-blue signature-verify"><i class="w3-margin-left fa fa-question-circle"></i> Unable to verify signature</h3>`;
-    } else if (settings.verificationResult) {
+    if (settings.verificationResult === true) {
       signatureVerify.innerHTML = `<h3 class="w3-green signature-verify"><i class="w3-margin-left fa fa-check-circle"></i> Signature verified</h3>`;
-    } else {
+    } else if (settings.verificationResult === false) {
       signatureVerify.innerHTML = `<h3 class="w3-red signature-verify"><i class="w3-margin-left fa fa-times-circle"></i> Invalid signature</h3>`;
+    } else {
+      signatureVerify.innerHTML = `<h3 class="w3-blue signature-verify"><i class="w3-margin-left fa fa-question-circle"></i> ${settings.verificationResult}</h3>`;
     }
   }
   
   private _renderGenerateTab(token: TokenModel) {
     const settings = token.verifySettings;
-    this._setSecretSelect("generateSecret", settings.autoSelect, settings.secret);
+    this._setKeySelect("generateKey", settings.autoSelect, settings.key);
     
-    this._displaySecretValue("generateSecretValue", settings.secret?.privateKey, "private");
+    this._displayKeyValue("generateKeyValue", settings.key?.privateKey, "private");
 
     const addExpiry = document.getElementById("addExpiry") as HTMLInputElement;
     addExpiry.checked = settings.addExpiry;
@@ -644,9 +639,9 @@ export class App {
   
   private _renderDecryptTab(token: TokenModel) {
     const settings = token.decryptSettings;
-    this._setSecretSelect("decryptSecret", settings.autoSelect, settings.secret);
+    this._setKeySelect("decryptKey", settings.autoSelect, settings.key);
 
-    this._displaySecretValue("decryptSecretValue", settings.secret?.privateKey, "private");
+    this._displayKeyValue("decryptKeyValue", settings.key?.privateKey, "private");
 
     const autoSelect = document.getElementById("autoSelectDecrypt") as HTMLInputElement;
     autoSelect.checked = settings.autoSelect;
@@ -654,9 +649,9 @@ export class App {
   
   private _renderEncryptTab(token: TokenModel) {
     const settings = token.decryptSettings;
-    this._setSecretSelect("encryptSecret", settings.autoSelect, settings.secret);
+    this._setKeySelect("encryptKey", settings.autoSelect, settings.key);
 
-    this._displaySecretValue("encryptSecretValue", settings.secret?.publicKey, "public");
+    this._displayKeyValue("encryptKeyValue", settings.key?.publicKey, "public");
 
     const autoEncrypt = document.getElementById("autoEncrypt") as HTMLInputElement;
     autoEncrypt.checked = settings.autoEncrypt;
@@ -665,49 +660,49 @@ export class App {
     algorithmValue.value = settings.algorithm ?? "None";
   }
 
-  private _setSecretSelect(id: string, autoSelect: boolean, secret: Secret) {
+  private _setKeySelect(id: string, autoSelect: boolean, key: Key) {
     if (autoSelect) {
-      this._autoSecretSelect(id, secret?.title);
+      this._autoKeySelect(id, key?.title);
     } else {
-      this._populateSecretSelect(id, secret?.id);
+      this._populateKeySelect(id, key?.id);
     }
   }
 
-  private _populateSecretSelect(id: string, value: string) {
-    const secretSelect = document.getElementById(id) as HTMLInputElement;
-    if (this._secrets.length > 0) {
-      secretSelect.innerHTML = "";
-      this._secrets.forEach((secret) => {
-        secretSelect.innerHTML += `<option value='${secret.id}'>${secret.title}</option>`;
+  private _populateKeySelect(id: string, value: string) {
+    const keySelect = document.getElementById(id) as HTMLInputElement;
+    if (this._keys.length > 0) {
+      keySelect.innerHTML = "";
+      this._keys.forEach((key) => {
+        keySelect.innerHTML += `<option value='${key.id}'>${key.title}</option>`;
       });
-      secretSelect.value = value;
-      secretSelect.disabled = false;
-      secretSelect.className = secretSelect.className.replace(" w3-disabled", "");
+      keySelect.value = value;
+      keySelect.disabled = false;
+      keySelect.className = keySelect.className.replace(" w3-disabled", "");
     } else {
-      secretSelect.innerHTML = "<option value='none'>No secrets available<option>";
-      secretSelect.value = "none";
-      secretSelect.disabled = true;
-      if (secretSelect.className.indexOf("w3-disabled") === -1) { 
-        secretSelect.className += " w3-disabled";
+      keySelect.innerHTML = "<option value='none'>No keys available<option>";
+      keySelect.value = "none";
+      keySelect.disabled = true;
+      if (keySelect.className.indexOf("w3-disabled") === -1) { 
+        keySelect.className += " w3-disabled";
       }
     }
   }
 
-  private _autoSecretSelect(id: string, value: string) {
-    const secretSelect = document.getElementById(id) as HTMLInputElement;
-    secretSelect.disabled = true;
-    if (secretSelect.className.indexOf("w3-disabled") === -1) { 
-      secretSelect.className += " w3-disabled";
+  private _autoKeySelect(id: string, value: string) {
+    const keySelect = document.getElementById(id) as HTMLInputElement;
+    keySelect.disabled = true;
+    if (keySelect.className.indexOf("w3-disabled") === -1) { 
+      keySelect.className += " w3-disabled";
     }
-    secretSelect.innerHTML = `<option value='auto'>${value ?? "Could not find appropriate secret"}</option>`;
+    keySelect.innerHTML = `<option value='auto'>${value ?? "Could not find appropriate key"}</option>`;
   }
 
-  private _displaySecretValue(id: string, key: string, keyType: string) {
-    const secretValue = document.getElementById(id);
+  private _displayKeyValue(id: string, key: string, keyType: string) {
+    const keyValue = document.getElementById(id);
     if (!!!key) {
-      secretValue.innerHTML = `<span class='w3-opacity'>Specify a ${keyType} key to verify signature</span>`;
+      keyValue.innerHTML = `<span class='w3-opacity'>Specify a ${keyType} key to verify signature</span>`;
     } else {
-      secretValue.innerHTML = key;
+      keyValue.innerHTML = Utils.parseKey(key, "<br>");
     }
   }
 
@@ -717,10 +712,10 @@ export class App {
     this._enableTokenButtons(token);
   }
 
-  private _onSaveDiscardSecret(secret: Secret) {
-    this._renderSecretTitle(secret);
-    this._reRenderSecret(secret);
-    this._enableSecretButtons(secret);
+  private _onSaveDiscardKey(key: Key) {
+    this._renderKeyTitle(key);
+    this._reRenderKey(key);
+    this._enableKeyButtons(key);
   }
 
   private _displayColorCodedToken(rawToken: string): string {
@@ -743,11 +738,11 @@ export class App {
     }
   }
 
-  private _getNewSecretId(): string {
+  private _getNewKeyId(): string {
     let i = 1;
     while (true) {
-      const id = `secret${i}`;
-      if (!!!this._secrets.find(secret => secret.id === id)) {
+      const id = `key${i}`;
+      if (!!!this._keys.find(key => key.id === id)) {
         return id;
       }
       i++;
@@ -762,12 +757,12 @@ export class App {
     this._enableButton("tokenDelete", notEmpty || this._tokens.length > 1);
   }
 
-  private _enableSecretButtons(secret: Secret) {
-    const dirty = secret.isDirty();
-    const notEmpty = !!secret.saved || secret.publicKey.length > 0 || secret.privateKey.length > 0;
-    this._enableButton("secretSave", dirty);
-    this._enableButton("secretDiscard", dirty && notEmpty);
-    this._enableButton("secretDelete", notEmpty || this._secrets.length > 1);
+  private _enableKeyButtons(key: Key) {
+    const dirty = key.isDirty();
+    const notEmpty = !!key.saved || key.publicKey.length > 0 || key.privateKey.length > 0;
+    this._enableButton("keySave", dirty);
+    this._enableButton("keyDiscard", dirty && notEmpty);
+    this._enableButton("keyDelete", notEmpty || this._keys.length > 1);
   }
 
   private _enableButton(id: string, enable: boolean) {
@@ -798,44 +793,44 @@ export class App {
     }
   }
 
-  private _verify(token: TokenModel) {
+  private async _verify(token: TokenModel) {
     const settings = token.verifySettings;
     if (!token.isValid()) {
-      settings.verificationResult = null;
+      settings.verificationResult = "Unable to verify - token invalid";
       settings.algorithm = null;
     } else {
       var jwt = token.token as JWT;
       settings.algorithm = jwt.header["alg"];
       if (settings.autoSelect) {
-        // Attempt to find a secret
+        // Attempt to find a key
         // Keep null for now
-        settings.secret = null;
-        settings.verificationResult = false;
+        settings.key = null;
+        settings.verificationResult = "Unable to verify - no key";
       } else {
-        // Set secret to first secret if none available
-        if (!!!settings.secret && this._secrets.length > 0) {
-          settings.secret = this._secrets[0];
+        // Set key to first key if none available
+        if (!!!settings.key && this._keys.length > 0) {
+          settings.key = this._keys[0];
         }
-        if (!!!settings.secret?.publicKey) {
+        if (!!!settings.key?.publicKey) {
           // No public key
-          settings.verificationResult = null;
+          settings.verificationResult = "Unable to verify - no key";
         } else {
-          settings.verificationResult = jwt.verify(settings.secret.publicKey);
+          settings.verificationResult = await jwt.verify(settings.key.publicKey, settings.algorithm);
         }
       }
     }
   }
 
-  private _decrypt(token: TokenModel) {
+  private async _decrypt(token: TokenModel) {
     const settings = token.decryptSettings;
     if (settings.autoSelect) {
-      // Attempt to find a secret
+      // Attempt to find a key
       // Keep null for now
-      settings.secret = null;
+      settings.key = null;
     } else {
-      // Set secret to first secret if none available
-      if (!!!settings.secret && this._secrets.length > 0) {
-        settings.secret = this._secrets[0];
+      // Set key to first key if none available
+      if (!!!settings.key && this._keys.length > 0) {
+        settings.key = this._keys[0];
       }
       // Attempt to decrypt
     }

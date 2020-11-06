@@ -1,5 +1,5 @@
 import { JWT, Token } from "./token";
-import { Secret } from "./secret";
+import { Key } from "./key";
 import { VerifySettings, DecryptSettings } from "./settings";
 
 // Contains raw token string with metadata including title, 
@@ -52,7 +52,7 @@ export class TokenModel {
   }
 
   public isValid(): boolean {
-    return !!!this.tokenParseError;
+    return !!!this.tokenParseError && this.token.raw.length > 0;
   }
 
   public isDirty(): boolean {

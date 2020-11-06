@@ -1,9 +1,14 @@
 // Contains logic for parsing tokens
-import * as Jose from "node-jose";
+import { JWK, JWS } from "node-jose";
+import * as Utils from "./utils";
 
 export enum SigningAlgorithm {
   HS256 = "HS256",
-  RS256 = "RS256"
+  HS384 = "HS384",
+  HS512 = "HS512",
+  RS256 = "RS256",
+  RS384 = "RS384",
+  RS512 = "RS512"
 }
 
 export enum EncryptionAlgorithm {
@@ -48,8 +53,34 @@ export class JWT extends Token {
     this.signature = parts[2];
   }
 
-  public verify(key: string): boolean {
-    return null;
+  public verify(key: string, alg: SigningAlgorithm): Promise<boolean | string> {
+    // Check to see if raw secret entered
+    if (alg.startsWith("HS") && !key.includes("{")) {
+      key = `{"kty":"oct","k":"${key}"}`;
+    }
+
+    const isPem = Utils.isPem(key);
+    if (isPem) {
+      key = Utils.parseKey(key, "\r\n");
+    }
+
+    return new Promise((resolve, _reject) => {
+      try {
+        (isPem ? JWK.asKey(key, "pem") : JWK.asKey(key)).then((jwk) => {
+          try {
+            JWS.createVerify(jwk)
+              .verify(this.raw)
+              .then(() => {
+                resolve(true);
+              });
+          } catch {
+            resolve(false);
+          }
+        });
+      } catch {
+        resolve("Unable to verify - invalid key");
+      }
+    });
   }
 }
 

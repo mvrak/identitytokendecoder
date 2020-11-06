@@ -9,3 +9,17 @@ export function displayDate(date: Date): string {
 export function displayDateMenu(date: Date): string {
   return !!date ? `${date.toLocaleString()}` : "Unsaved";
 }
+
+export function isPem(key: string) {
+  return !!key.match(/^-----BEGIN (PUBLIC|RSA PRIVATE) KEY-----.*-----END (PUBLIC|RSA PRIVATE) KEY-----$/);
+}
+
+export function parseKey(key: string, lineSep: string): string {
+  const pem = key.match(/^-----BEGIN (PUBLIC|RSA PRIVATE) KEY-----(.*)-----END (PUBLIC|RSA PRIVATE) KEY-----$/);
+  if (!!pem) {
+    const middle = pem[2];
+    return `-----BEGIN PUBLIC KEY-----${lineSep}${middle.match(/.{1,64}/g).join(lineSep)}${lineSep}-----END PUBLIC KEY-----${lineSep}`;
+  } else {
+    return key;
+  }
+}

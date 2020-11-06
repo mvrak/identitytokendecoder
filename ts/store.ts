@@ -1,4 +1,4 @@
-import { Secret } from "./secret";
+import { Key } from "./key";
 import { TokenModel } from "./tokenModel";
 
 export class Store {
@@ -7,14 +7,14 @@ export class Store {
   constructor() {
   }
 
-  public retrieveAll(): [TokenModel[], Secret] {
+  public retrieveAll(): [TokenModel[], Key] {
     return null;
   }
 
   public saveToken(token: TokenModel) {
   }
 
-  public saveSecret(secret: Secret) {
+  public saveKey(key: Key) {
   }
 
   public purgeLocalStorage() {

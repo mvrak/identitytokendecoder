@@ -1,4 +1,4 @@
-import { Secret } from "./secret";
+import { Key } from "./key";
 import { SigningAlgorithm, EncryptionAlgorithm } from "./token";
 
 export enum SettingsTab {
@@ -16,7 +16,7 @@ export enum TimeUnit {
 
 export class VerifySettings {
   // Common settings
-  public secret: Secret;
+  public key: Key;
   public algorithm: SigningAlgorithm;
 
   // Verify settings
@@ -27,10 +27,10 @@ export class VerifySettings {
   public validTime: number;
   public validTimeUnit: TimeUnit;
 
-  public verificationResult?: boolean;
+  public verificationResult: boolean | string;
 
   constructor() {
-    this.secret = null;
+    this.key = null;
     this.algorithm = SigningAlgorithm.HS256;
 
     this.autoSelect = true;
@@ -45,7 +45,7 @@ export class VerifySettings {
 
 export class DecryptSettings {
   // Common settings
-  public secret: Secret;
+  public key: Key;
   public algorithm: EncryptionAlgorithm;
 
   // Decrypt settings
@@ -55,7 +55,7 @@ export class DecryptSettings {
   public autoEncrypt: boolean;
 
   constructor() {
-    this.secret = null;
+    this.key = null;
     this.algorithm = EncryptionAlgorithm.A128CBC;
 
     this.autoSelect = true;
