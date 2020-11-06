@@ -56,7 +56,7 @@ export class App {
     this._renderTokens();
     this._renderKeys();
     
-    this._expandMenu("tokens");
+    this._toggleMenu("tokens");
 
     this._displayToken(this._tokens[0]);
   }
@@ -103,6 +103,7 @@ export class App {
     const newToken = new TokenModel(id, "New Token");
     this._tokens.push(newToken);
     this._renderNewToken(newToken);
+    this._expandMenu("tokens");
     this._displayToken(newToken);
   }
 
@@ -111,6 +112,7 @@ export class App {
     const newKey = new Key(id, "New Key");
     this._keys.push(newKey);
     this._renderNewKey(newKey);
+    this._expandMenu("keys");
     this._displayKey(newKey);
   }
 
@@ -255,11 +257,11 @@ export class App {
     }
   }
 
-  private _onKeyFetch() {
-  }
+  // private _onKeyFetch() {
+  // }
 
-  private _onKeyUpload() {
-  }
+  // private _onKeyUpload() {
+  // }
 
   private _onVerifyKeyChanged(id: string) {
     const token = this._current as TokenModel;
@@ -310,6 +312,22 @@ export class App {
     this._renderEncryptTab(token);
   }
 
+  private _onEditKeyVerify() {
+    const token = this._current as TokenModel;
+    const settings = token.verifySettings;
+    
+    const key = settings.key;
+    this._displayKey(key);
+  }
+
+  private _onEditKeyDecrypt() {
+    const token = this._current as TokenModel;
+    const settings = token.decryptSettings;
+    
+    const key = settings.key;
+    this._displayKey(key);
+  }
+
   private _purgeAll() {
     this._tokens = [];
     this._keys = [];
@@ -340,7 +358,7 @@ export class App {
     this._settingsTab = tabName;
   }
 
-  private _expandMenu(id: string) {
+  private _toggleMenu(id: string) {
     let x = document.getElementById(id);
     if (x.className.indexOf("w3-show") == -1) {
       x.className += " w3-show"; 
@@ -349,6 +367,14 @@ export class App {
       x.className = x.className.replace(" w3-show", "");
       x.previousElementSibling.className = 
       x.previousElementSibling.className.replace(" w3-red", "");
+    }
+  }
+
+  private _expandMenu(id: string) {
+    let x = document.getElementById(id);
+    if (x.className.indexOf("w3-show") == -1) {
+      x.className += " w3-show"; 
+      x.previousElementSibling.className += " w3-red";
     }
   }
 
@@ -387,11 +413,11 @@ export class App {
     document.getElementById("keySave").addEventListener('click', () => this._onKeySave());
     document.getElementById("keyDiscard").addEventListener('click', () => this._onKeyDiscard());
     document.getElementById("keyDelete").addEventListener('click', () => this._onKeyDelete());
-    document.getElementById("keyFetch").addEventListener('click', () => this._onKeyFetch());
-    document.getElementById("keyUpload").addEventListener('click', () => this._onKeyDelete());
+    // document.getElementById("keyFetch").addEventListener('click', () => this._onKeyFetch());
+    // document.getElementById("keyUpload").addEventListener('click', () => this._onKeyDelete());
 
-    document.getElementById("tokensBtn").addEventListener('click', () => this._expandMenu("tokens"));
-    document.getElementById("keysBtn").addEventListener('click', () => this._expandMenu("keys"));
+    document.getElementById("tokensBtn").addEventListener('click', () => this._toggleMenu("tokens"));
+    document.getElementById("keysBtn").addEventListener('click', () => this._toggleMenu("keys"));
 
     document.getElementById("confirmPurge").addEventListener('click', () => this._purgeAll());
 
@@ -402,6 +428,16 @@ export class App {
     document.getElementById("generateKey").addEventListener('input', () => this._onVerifyKeyChanged("verifyKey"));
     document.getElementById("decryptKey").addEventListener('input', () => this._onDecryptKeyChanged("decryptKey"));
     document.getElementById("encryptKey").addEventListener('input', () => this._onDecryptKeyChanged("encryptKey"));
+
+    document.getElementById("verifyEditKey").addEventListener('click', () => this._onEditKeyVerify());
+    document.getElementById("generateEditKey").addEventListener('click', () => this._onEditKeyVerify());
+    document.getElementById("decryptEditKey").addEventListener('click', () => this._onEditKeyDecrypt());
+    document.getElementById("encryptEditKey").addEventListener('click', () => this._onEditKeyDecrypt());
+
+    document.getElementById("verifyNewKey").addEventListener('click', () => this._newKey());
+    document.getElementById("generateNewKey").addEventListener('click', () => this._newKey());
+    document.getElementById("decryptNewKey").addEventListener('click', () => this._newKey());
+    document.getElementById("encryptNewKey").addEventListener('click', () => this._newKey());
   }
 
   private _highlightMenuItem(id: string) {
@@ -589,6 +625,8 @@ export class App {
 
   private _renderVerifyTab(token: TokenModel) {
     const settings = token.verifySettings;
+
+    this._enableButton("verifyEditKey", !!settings.key && !!!settings.key.url);
     this._setKeySelect("verifyKey", settings.autoSelect, settings.key);
 
     const autoSelect = document.getElementById("autoSelectVerify") as HTMLInputElement;
@@ -620,6 +658,8 @@ export class App {
   
   private _renderGenerateTab(token: TokenModel) {
     const settings = token.verifySettings;
+
+    this._enableButton("generateEditKey", !!settings.key && !!!settings.key.url);
     this._setKeySelect("generateKey", settings.autoSelect, settings.key);
     
     this._displayKeyValue("generateKeyValue", settings.key?.privateKey, "private");
@@ -639,6 +679,8 @@ export class App {
   
   private _renderDecryptTab(token: TokenModel) {
     const settings = token.decryptSettings;
+
+    this._enableButton("decryptEditKey", !!settings.key && !!!settings.key.url);
     this._setKeySelect("decryptKey", settings.autoSelect, settings.key);
 
     this._displayKeyValue("decryptKeyValue", settings.key?.privateKey, "private");
@@ -649,6 +691,8 @@ export class App {
   
   private _renderEncryptTab(token: TokenModel) {
     const settings = token.decryptSettings;
+
+    this._enableButton("encryptEditKey", !!settings.key && !!!settings.key.url);
     this._setKeySelect("encryptKey", settings.autoSelect, settings.key);
 
     this._displayKeyValue("encryptKeyValue", settings.key?.publicKey, "public");
@@ -803,14 +847,13 @@ export class App {
       settings.algorithm = jwt.header["alg"];
       if (settings.autoSelect) {
         // Attempt to find a key
-        if (this._tokens.length === 0) {
+        if (this._keys.length === 0) {
           settings.key = null;
           settings.verificationResult = "Unable to verify - no key";
         } else {
           settings.key = await jwt.searchAndVerify(this._keys, settings.algorithm);
           settings.verificationResult = !!settings.key;
         }
-        settings.key = null;
       } else {
         // Set key to first key if none available
         if (!!!settings.key && this._keys.length > 0) {

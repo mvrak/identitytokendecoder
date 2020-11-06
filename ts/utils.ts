@@ -20,6 +20,11 @@ export function parseKey(key: string, lineSep: string): string {
     const middle = pem[2];
     return `-----BEGIN PUBLIC KEY-----${lineSep}${middle.match(/.{1,64}/g).join(lineSep)}${lineSep}-----END PUBLIC KEY-----${lineSep}`;
   } else {
-    return key;
+    try {
+      // See if result is a json object
+      return formatJson(JSON.parse(key));
+    } catch {
+      return key;
+    }
   }
 }

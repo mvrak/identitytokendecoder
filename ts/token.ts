@@ -55,8 +55,10 @@ export class JWT extends Token {
   }
 
   public async verify(key: string, alg: SigningAlgorithm): Promise<boolean | string> {
-    // Check to see if raw secret entered
-    if (!key.includes("{")) {
+    // Check to see if raw secret 
+    try {
+      JSON.parse(key);
+    } catch {
       if (alg.startsWith("HS")) {
         key = `{"kty":"oct","k":"${key}"}`;
       } else {
