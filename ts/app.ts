@@ -633,7 +633,7 @@ export class App {
   private _displayDecodedToken(token: JWT): string {
     const header = Utils.formatJson(token.header);
     const payload = Utils.formatJson(token.payload);
-    return `<span class="w3-text-red">${header}</span>.<span class="w3-text-blue">${payload}</span>.<span class="w3-text-green">[Signature]</span>`;
+    return `<span class="w3-text-red">${header}</span>.<span contentEditable="true" class="w3-text-blue">${payload}</span>.<span class="w3-text-green">[Signature]</span>`;
   }
 
   private _displayClaimsTable(token: JWT): string {
