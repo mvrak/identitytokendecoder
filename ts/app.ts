@@ -1,8 +1,8 @@
 import { Key } from "./key";
 import { KeyFetch } from "./keyFetch";
-import { SettingsTab, TimeUnit } from "./settings";
+import { SettingsTab, TimeUnit, VerifySettings, secondsIn } from "./settings";
 import { Store } from "./store";
-import { SigningAlgorithm, EncryptionAlgorithm, JWT, Token } from "./token";
+import { SigningAlgorithm, EncryptionAlgorithm, JWT } from "./token";
 import { TokenModel } from "./tokenModel";
 import * as Claims from "./claims";
 import * as Utils from "./utils";
@@ -43,7 +43,7 @@ export class App {
 
     this._tokens = [
       new TokenModel("token1", "Sample Token", new Date("1 November, 2020"), "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.GCy21r1m_iGRo7ihyi5vhgvBnQe1uGtLHpE7aUcUEfE"),
-      new TokenModel("token2", "Sample Token 2", new Date("1 November, 2020"), "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c")
+      new TokenModel("token2", "Sample Token 2", new Date("1 November, 2020"), "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI")
     ];
     
     this._keys = [
@@ -73,9 +73,10 @@ export class App {
     document.getElementById("keysDisplay").style.display = "none";
     
     this._renderTokenTitle(token);
+    this._renderRawToken(token);
     document.getElementById("tokenLastSaved").innerHTML = Utils.displayDate(token.saved);
-    document.getElementById("rawToken").innerHTML = this._displayColorCodedToken(token.token.raw);
     
+    this._clearTokenDetails();
     this._renderTokenDetails(token);
     this._enableTokenButtons(token);
     this._openTab(this._settingsTab);
@@ -207,14 +208,13 @@ export class App {
     const token = this._current as TokenModel;
     token.discard();
 
-    document.getElementById("rawToken").innerHTML = this._displayColorCodedToken(token.token.raw);
+    this._renderRawToken(token);
     this._renderTokenDetails(token);
     this._onSaveDiscardToken(token);
 
     this._verify(token)
       .then(() => this._decrypt(token))
       .then(() => this._renderTabs(token));
-
   }
   
   private _onTokenDelete() {
@@ -394,15 +394,22 @@ export class App {
     const token = this._current as TokenModel;
     const settings = token.verifySettings;
 
-    const validTime = document.getElementById("validTime") as HTMLInputElement;
-    settings.validTime = parseFloat(validTime.value);
-
-    this._generate(token)
-      .then(() => this._verify(token))
-      .then(() => {
+    const algorithm = document.getElementById("algorithm") as HTMLInputElement;
+    settings.algorithm = algorithm.value as SigningAlgorithm;
+    
+    if (token.isValid()) {
+      const jwt = token.token as JWT;
+      jwt.setAlg(settings.algorithm);
+      this._renderRawToken(token);
+      this._renderTokenDetails(token);
+      this._renderTokenTitle(token);
+      this._reRenderToken(token);
+      this._enableTokenButtons(token);
+      this._verify(token).then(() => {
         this._renderVerifyTab(token);
         this._renderGenerateTab(token);
       });
+    }
   }
 
   private _onAutoEncryptChanged() {
@@ -430,8 +437,14 @@ export class App {
   private async _onGenerate() {
     const token = this._current as TokenModel;
 
-    this._generate(token)
-    .then(() => this._verify(token))
+    this._generate(token).then(() => {
+      this._renderRawToken(token);
+      this._renderTokenDetails(token);
+      this._renderTokenTitle(token);
+      this._reRenderToken(token);
+      this._enableTokenButtons(token);
+      return this._verify(token);
+    })
     .then(() => {
       this._renderVerifyTab(token);
       this._renderGenerateTab(token);
@@ -592,6 +605,26 @@ export class App {
     document.getElementById("keyDirty").innerHTML = key.isDirty() ? "*" : "";
   }
 
+  private _clearTokenDetails() {
+    const decodedToken = document.getElementById("decodedToken");
+    const tokenMessage = document.getElementById("tokenMessage");
+    const claimsTable = document.getElementById("claimsTable");
+
+    decodedToken.innerHTML = "";
+    claimsTable.innerHTML = `<table class="w3-table-all">
+        <tr>
+          <th width="20%">Claim type</th>
+          <th width="30%">Value</th>
+          <th width="50%">Notes</th>
+        </tr>
+        </table>`;
+        tokenMessage.innerHTML = "";
+  }
+
+  private _renderRawToken(token: TokenModel) {
+    document.getElementById("rawToken").innerHTML = this._displayColorCodedToken(token.token.raw);
+  }
+
   private _renderTokenDetails(token: TokenModel) {
     const decodedToken = document.getElementById("decodedToken");
     const tokenMessage = document.getElementById("tokenMessage");
@@ -616,24 +649,46 @@ export class App {
       if (!!jwt) {
         decodedToken.innerHTML = this._displayDecodedToken(jwt);
         claimsTable.innerHTML = this._displayClaimsTable(jwt);
-      } else {
-        decodedToken.innerHTML = "";
-        claimsTable.innerHTML = `<table class="w3-table-all">
-        <tr>
-          <th width="20%">Claim type</th>
-          <th width="30%">Value</th>
-          <th width="50%">Notes</th>
-        </tr>
-        </table>`;
-        tokenMessage.innerHTML = "";
       }
+    }
+
+    const payload = document.getElementById("payload");
+    if (!!payload) {
+      payload.contentEditable = token.isValid().toString();
+
+      if (token.isValid()) {
+        document.getElementById("payload")?.addEventListener('input', () => {
+          const payloadStr = document.getElementById("payload").textContent.replace(/({|:|,)\s+(")/g, (_m, p1, p2) => `${p1}${p2}`);
+          let payloadObj: object;
+          // Check if payload is valid
+          try {
+            payloadObj = JSON.parse(payloadStr);
+
+            const jwt = token.token as JWT;
+            jwt.setPayload(payloadObj);
+
+            claimsTable.innerHTML = this._displayClaimsTable(jwt);
+            this._renderRawToken(token);
+            this._renderTokenTitle(token);
+            this._reRenderToken(token);
+            this._verify(token).then(() => {
+              this._renderVerifyTab(token);
+              this._renderGenerateTab(token);
+            });
+          } catch {
+            // Set error
+            tokenMessage.innerHTML = `<span class="w3-text-red">Invalid payload</span>`;
+          }
+        });
+      }
+
     }
   }
 
   private _displayDecodedToken(token: JWT): string {
     const header = Utils.formatJson(token.header);
     const payload = Utils.formatJson(token.payload);
-    return `<span class="w3-text-red">${header}</span>.<span contentEditable="true" class="w3-text-blue">${payload}</span>.<span class="w3-text-green">[Signature]</span>`;
+    return `<span class="w3-text-red">${header}</span>.<span id="payload" class="w3-text-blue">${payload}</span>.<span class="w3-text-green">[Signature]</span>`;
   }
 
   private _displayClaimsTable(token: JWT): string {
@@ -793,15 +848,13 @@ export class App {
     this._enableButton("generateEditKey", !!settings.key && !!!settings.key.url);
     this._setKeySelect("generateKey", settings.autoSelect, settings.key);
     
-    let privateKey = settings.key?.privateKey;
-    if (!!!privateKey) {
-      privateKey = settings.algorithm?.startsWith("HS") ? settings.key?.publicKey : "";
-    }
+    let privateKey = this._getGenerateKey(settings);
 
     this._displayKeyValue("generateKeyValue", privateKey, "Specify a private key to generate signature");
     
-    const algorithmSelect = document.getElementById("algorithm") as HTMLInputElement;
-    algorithmSelect.value = settings.algorithm ?? "None";
+    const algorithmSelect = document.getElementById("algorithm") as HTMLSelectElement;
+    algorithmSelect.value = (algorithmSelect.innerHTML.indexOf(`value="${algorithmSelect.value}"`) !== -1) ? settings.algorithm : algorithmSelect.options[0].value;
+    algorithmSelect.disabled = !token.isValid();
 
     const addExpiry = document.getElementById("addExpiry") as HTMLInputElement;
     addExpiry.checked = settings.addExpiry;
@@ -842,10 +895,19 @@ export class App {
     const autoEncrypt = document.getElementById("autoEncrypt") as HTMLInputElement;
     autoEncrypt.checked = settings.autoEncrypt;
 
-    const algorithmValue = document.getElementById("encryptAlgorithm") as HTMLInputElement;
-    algorithmValue.value = settings.algorithm ?? "None";
+    const algorithmSelect = document.getElementById("encryptAlgorithm") as HTMLInputElement;
+    algorithmSelect.value = settings.algorithm;
+    algorithmSelect.disabled = !token.isValid();
 
     this._enableButton("encryptBtn", !!settings.key?.publicKey);
+  }
+
+  private _getGenerateKey(settings: VerifySettings) {
+    let privateKey = settings.key?.privateKey;
+    if (!!!privateKey) {
+      privateKey = settings.algorithm?.startsWith("HS") ? settings.key?.publicKey : "";
+    }
+    return privateKey;
   }
 
   private _setKeySelect(id: string, autoSelect: boolean, key: Key) {
@@ -990,7 +1052,6 @@ export class App {
         settings.key = this._keys[0];
       }
       settings.verificationResult = "Unable to verify - token invalid";
-      settings.algorithm = null;
     } else {
       var jwt = token.token as JWT;
       settings.algorithm = jwt.header["alg"];
@@ -1019,6 +1080,16 @@ export class App {
   }
 
   private async _generate(token: TokenModel) {
+    try {
+      const jwt = token.token as JWT;
+      const settings = token.verifySettings;
+      const privateKey = this._getGenerateKey(settings);
+      const validFor = settings.addExpiry ? settings.validTime * secondsIn(settings.validTimeUnit) : null;
+
+      await jwt.generate(privateKey, settings.algorithm, validFor);
+    } catch (e) {
+      window.alert(e.message);
+    }
   }
 
   private async _decrypt(token: TokenModel) {

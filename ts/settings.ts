@@ -62,3 +62,16 @@ export class DecryptSettings {
     this.autoEncrypt = false;
   }
 }
+
+export function secondsIn(unit: TimeUnit): number {
+  switch (unit) {
+    case TimeUnit.Second:
+      return 1;
+    case TimeUnit.Minute:
+      return 60;
+    case TimeUnit.Hour:
+      return 3600;
+    default:
+      return 1;
+  }
+}

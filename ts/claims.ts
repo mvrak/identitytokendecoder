@@ -145,7 +145,7 @@ export function translateClaimsValue(claimType: string, value: any): string {
     return "";
   }
   if (claimType === "iat" || claimType === "nbf" || claimType === "exp") {
-    return new Date(value as number).toString();
+    return new Date((value as number) * 1000).toString();
   }
   if (typeof value === "object") {
     if (!Array.isArray(value)) {
