@@ -474,9 +474,10 @@ export class App {
 
     token.setToken(jwe.decrypted.raw);
 
-    this._renderRawToken(token);
     this._reRenderToken(token);
     this._renderTokenTitle(token);
+    this._renderRawToken(token);
+    this._renderTokenDetails(token);
     this._renderDecryptTab(token);
     this._renderEncryptTab(token);
     this._enableTokenButtons(token);

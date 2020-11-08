@@ -190,8 +190,8 @@ export class JWT extends Token {
     }
     
     try {
-      const jweString = await JWE.createEncrypt({format: "compact", fields: { typ: "JWT", enc: alg }}, key).final(this.raw);
-      return new JWE(jweString, this);
+      const jweString = await JWE.createEncrypt({format: "compact", fields: { typ: "JWT", enc: alg }}, jwk).final(this.raw);
+      return new JWEToken(jweString, this);
     } catch (e) {
       throw new Error(`Could not encrypt token: ${e.message}`);
     }
@@ -300,7 +300,7 @@ async function getKey(key: string): Promise<JWK.Key> {
     if (isPem) {
       key = Utils.parseKey(key, "\r\n");
     } else {
-      return key = `{"kty":"oct","k":"${key}"}`;
+      key = `{"kty":"oct","k":"${key}"}`;
     }
   }
 
