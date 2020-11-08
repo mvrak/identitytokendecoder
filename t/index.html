@@ -86,7 +86,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
         </div>
         <div class="tab-section">
           Public key value:
-          <div class="tab-key-box" contenteditable="false" id="verifyKeyValue"></div>
+          <div class="tab-box" id="verifyKeyValue"></div>
         </div>
         <div class="tab-section">
           <span style="float:left"><b>Key Source</b></span>
@@ -108,7 +108,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
 
         <div class="tab-section">
           Private key value:
-          <div class="tab-key-box" contenteditable="false" id="generateKeyValue"></div>
+          <div class="tab-box" id="generateKeyValue"></div>
         </div>
         
         <div class="tab-section">
@@ -149,7 +149,12 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
 
         <div class="tab-section">
           Private key value:
-          <div class="tab-key-box" contenteditable="false" id="decryptKeyValue"></div>
+          <div class="tab-box" id="decryptKeyValue"></div>
+        </div>
+
+        <div class="tab-section">
+          JWE protected header:
+          <div class="tab-box" id="jweHeaderValue"></div>
         </div>
 
         <div class="tab-section">
@@ -167,12 +172,7 @@ html,body,h1,h2,h3,h4,h5 {font-family: "RobotoDraft", "Roboto", sans-serif}
 
         <div class="tab-section">
            Public key value:
-          <div class="tab-key-box" contenteditable="false" id="encryptKeyValue"></div>
-        </div>
-
-        <div class="tab-section">
-          <input type="checkbox" id="autoEncrypt">
-          <lablel for="autoEncrypt">Encrypt generated token</lablel>
+          <div class="tab-box" id="encryptKeyValue"></div>
         </div>
 
         <div style="float:left; width:100%">

@@ -27,6 +27,7 @@ export class VerifySettings {
   public validTime: number;
   public validTimeUnit: TimeUnit;
 
+  // Result
   public verificationResult: boolean | string;
 
   constructor() {
@@ -51,15 +52,16 @@ export class DecryptSettings {
   // Decrypt settings
   public autoSelect: boolean;
 
-  // Encrypt settings
-  public autoEncrypt: boolean;
+  // Result
+  public decryptionResult: boolean | string;
 
   constructor() {
     this.key = null;
-    this.algorithm = EncryptionAlgorithm.A128CBC;
+    this.algorithm = EncryptionAlgorithm.A128CBCN;
 
     this.autoSelect = true;
-    this.autoEncrypt = false;
+
+    this.decryptionResult = null;
   }
 }
 

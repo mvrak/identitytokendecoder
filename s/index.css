@@ -119,16 +119,16 @@
 .tabcontent {
   display: none;
   padding: 10px 12px;
-  min-height: 420px;
+  min-height: 400px;
 }
 
-.tab-key-box {
+.tab-box {
   width: 100%;
   padding: 10px;
   border: 1px solid black;
   word-wrap: break-word;
   word-break: break-word;
-  height: 100px;
+  height: 75px;
   overflow-y: scroll;
 }
 
