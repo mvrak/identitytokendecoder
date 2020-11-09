@@ -89,8 +89,7 @@ export class JWT extends Token {
     try {
       await JWS.createVerify(jwk).verify(this.raw)
       return true;
-    } catch (e) {
-      console.log(e);
+    } catch {
       return false;
     }
   }
@@ -235,8 +234,7 @@ export class JWEToken extends Token {
       const result = await JWE.createDecrypt(ks).decrypt(this.raw);
       this.decrypted = new JWT(result.payload.toString());
       return true;
-    } catch (e) {
-      console.log(e);
+    } catch {
       return "Could not decrypt token - Decryption Failure";
     }
   }

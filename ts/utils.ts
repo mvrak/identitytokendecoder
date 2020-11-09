@@ -11,13 +11,13 @@ export function displayDateMenu(date: Date): string {
 }
 
 export function isPem(key: string) {
-  return !!key.match(/^-----BEGIN (PUBLIC|RSA PRIVATE) KEY-----.*-----END (PUBLIC|RSA PRIVATE) KEY-----$/);
+  return !!key.match(/^-----BEGIN .*-----.*-----END .*-----$/);
 }
 
 export function parseKey(key: string, lineSep: string): string {
-  const pem = key.match(/^-----BEGIN (PUBLIC|RSA PRIVATE) KEY-----(.*)-----END (PUBLIC|RSA PRIVATE) KEY-----$/);
+  const pem = key.match(/^-----BEGIN(.*)-----(.*)-----END(.*)-----$/);
   if (!!pem) {
-    return `-----BEGIN ${pem[1]} KEY-----${lineSep}${pem[2].match(/.{1,64}/g).join(lineSep)}${lineSep}-----END ${pem[3]} KEY-----${lineSep}`;
+    return `-----BEGIN${pem[1]}-----${lineSep}${pem[2].match(/.{1,64}/g).join(lineSep)}${lineSep}-----END${pem[3]}-----${lineSep}`;
   } else {
     try {
       // See if result is a json object

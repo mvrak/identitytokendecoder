@@ -80,7 +80,7 @@ export class App {
     this._enableTokenButtons(token);
     this._openTab(this._settingsTab);
 
-    (token.encrypted ? this._decrypt(token) : Promise.resolve()).then(() => {
+    this._decryptIfNeeded(token).then(() => {
       this._renderTokenDetails(token);
       return this._verify(token);
     }).then(() => this._renderTabs(token));
@@ -146,7 +146,7 @@ export class App {
     this._reRenderToken(token);
     this._enableTokenButtons(token);
     
-    (token.encrypted ? this._decrypt(token) : Promise.resolve()).then(async () => {
+    this._decryptIfNeeded(token).then(() => {
       this._renderTokenDetails(token);
       return this._verify(token);
     }).then(() => this._renderTabs(token));
@@ -209,9 +209,10 @@ export class App {
     this._renderRawToken(token);
     this._onSaveDiscardToken(token);
     
-    this._renderTokenDetails(token);
-    this._verify(token)
-      .then(() => this._renderTabs(token));
+    this._decryptIfNeeded(token).then(() => {
+      this._renderTokenDetails(token);
+      return this._verify(token);
+    }).then(() => this._renderTabs(token));
   }
   
   private _onTokenDelete() {
@@ -296,8 +297,7 @@ export class App {
     if (token.canRead()) {
       this._verify(token)
         .then(() => {
-          this._renderVerifyTab(token);
-          this._renderGenerateTab(token);
+          this._renderTabs(token);
         });
     }
   }
@@ -311,8 +311,7 @@ export class App {
 
     if (token.encrypted) {
       this._decrypt(token).then(() => this._verify(token)).then(() => {
-        this._renderDecryptTab(token);
-        this._renderEncryptTab(token);
+        this._renderTabs(token);
         this._renderTokenDetails(token);
       });
     } else {
@@ -321,8 +320,7 @@ export class App {
       } else if (!!!settings.key && this._keys.length > 0) {
         settings.key = this._keys[0];
       }
-      this._renderDecryptTab(token);
-      this._renderEncryptTab(token);
+      this._renderTabs(token);
     }
   }
 
@@ -333,8 +331,7 @@ export class App {
     token.verifySettings.autoSelect = autoSelect.checked;
 
     this._verify(token).then(() => {
-      this._renderVerifyTab(token);
-      this._renderGenerateTab(token);
+      this._renderTabs(token);
     });
   }
 
@@ -347,8 +344,7 @@ export class App {
 
     if (token.encrypted) {
       this._decrypt(token).then(() => this._verify(token)).then(() => {
-        this._renderDecryptTab(token);
-        this._renderEncryptTab(token);
+        this._renderTabs(token);
         this._renderTokenDetails(token);
       });
     } else {
@@ -357,8 +353,7 @@ export class App {
       } else if (!!!settings.key && this._keys.length > 0) {
         settings.key = this._keys[0];
       }
-      this._renderDecryptTab(token);
-      this._renderEncryptTab(token);
+      this._renderTabs(token);
     }
   }
 
@@ -430,8 +425,7 @@ export class App {
 
       this._renderTokenDetails(token);
       this._verify(token).then(() => {
-        this._renderVerifyTab(token);
-        this._renderGenerateTab(token);
+        this._renderTabs(token);
       });
     }
   }
@@ -463,8 +457,7 @@ export class App {
       return this._verify(token);
     })
     .then(() => {
-      this._renderVerifyTab(token);
-      this._renderGenerateTab(token);
+      this._renderTabs(token);
     });
   }
 
@@ -478,8 +471,7 @@ export class App {
     this._renderTokenTitle(token);
     this._renderRawToken(token);
     this._renderTokenDetails(token);
-    this._renderDecryptTab(token);
-    this._renderEncryptTab(token);
+    this._renderTabs(token);
     this._enableTokenButtons(token);
   }
 
@@ -729,8 +721,7 @@ export class App {
       this._renderTokenTitle(token);
       this._reRenderToken(token);
       this._verify(token).then(() => {
-        this._renderVerifyTab(token);
-        this._renderGenerateTab(token);
+        this._renderTabs(token);
       });
     } catch {
       // Set error
@@ -1201,5 +1192,9 @@ export class App {
     } catch (e) {
       window.alert(e.message);
     }
+  }
+
+  private _decryptIfNeeded(token: TokenModel): Promise<void> {
+    return token.encrypted ? this._decrypt(token) : Promise.resolve();
   }
 }
