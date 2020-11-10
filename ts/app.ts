@@ -669,7 +669,7 @@ export class App {
       rawToken.innerHTML = newInnerHTML;
       if (setCursor) {
         let anchor: Element = document.getElementById(anchorId);
-        if (cursor > anchor.textContent.length) {
+        while (cursor > anchor?.textContent.length) {
           cursor -= anchor.textContent.length;
           anchor = anchor.nextElementSibling;
         }
@@ -1049,6 +1049,7 @@ export class App {
     let coloredstring = "";
     let n = 0;
     for (let i = 0; i < segments.length; i++) {
+      if (segments[i].length === 0) continue;
       coloredstring += `<span class="${App.tokenColors[i]}" id="${idPrefix}${n++}">${segments[i]}</span>`;
       if (i < segments.length - 1) {
         coloredstring += `<span id="${idPrefix}${n++}">.</span>`;
