@@ -142,7 +142,7 @@ export class App {
     token.setToken(tokenString);
 
     this._renderTokenTitle(token);
-    this._renderRawToken(token);
+    this._renderRawToken(token, true);
     this._reRenderToken(token);
     this._enableTokenButtons(token);
     
@@ -416,7 +416,7 @@ export class App {
     settings.algorithm = algorithm.value as SigningAlgorithm;
     
     if (token.isValid() && token.canRead()) {
-      const jwt = token.getJWT(token.token);
+      const jwt = token.getJWT();
       jwt.setAlg(settings.algorithm);
       this._renderRawToken(token);
       this._renderTokenTitle(token);
@@ -651,8 +651,38 @@ export class App {
       tokenMessage.innerHTML = "";
   }
 
-  private _renderRawToken(token: TokenModel) {
-    document.getElementById("rawToken").innerHTML = this._displayColorCodedToken(token.token.raw);
+  private _renderRawToken(token: TokenModel, setCursor?: true) {
+    const rawToken = document.getElementById("rawToken");
+    const newInnerHTML = this._displayColorCodedToken(token.token.raw, "rawTokenBox");
+    if (rawToken.innerHTML !== newInnerHTML) {
+      let selection: Selection;
+      let anchorId: string;
+      let cursor: number;
+      if (setCursor) {
+        selection = window.getSelection();
+        anchorId = selection.anchorNode.parentElement.id;
+        cursor = selection.anchorOffset;
+        if (!anchorId) {
+          anchorId = "rawTokenBox0";
+        }
+      }
+      rawToken.innerHTML = newInnerHTML;
+      if (setCursor) {
+        let anchor: Element = document.getElementById(anchorId);
+        if (cursor > anchor.textContent.length) {
+          cursor -= anchor.textContent.length;
+          anchor = anchor.nextElementSibling;
+        }
+
+        if (!!anchor && anchor.textContent.length > 0) {
+          const range = document.createRange();
+          range.setStart(anchor.firstChild, cursor);
+          range.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      }
+    }
   }
 
   private _renderTokenDetails(token: TokenModel) {
@@ -661,7 +691,7 @@ export class App {
     const claimsTable = document.getElementById("claimsTable");
 
     if (token.isValid()) {
-      const jwt = token.getJWT(token.token);
+      const jwt = token.getJWT();
 
       if (!!jwt) {
         decodedToken.innerHTML = this._displayDecodedToken(jwt);
@@ -678,18 +708,11 @@ export class App {
       }
     } else {
       tokenMessage.innerHTML = token.tokenParseError ? `<span class="w3-text-red">${token.tokenParseError}</span>` : "";
-      
-      const jwt = token.getJWT(token.lastValid);
-      
-      if (!!jwt) {
-        decodedToken.innerHTML = this._displayDecodedToken(jwt);
-        claimsTable.innerHTML = this._displayClaimsTable(jwt);
-      }
     }
 
     const header = document.getElementById("header");
     if (!!header) {
-      header.contentEditable = token.isValid().toString();
+      header.contentEditable = (token.isValid() && token.canRead()).toString();
 
       if (token.isValid()) {
         document.getElementById("header")?.addEventListener('input',
@@ -699,7 +722,7 @@ export class App {
 
     const payload = document.getElementById("payload");
     if (!!payload) {
-      payload.contentEditable = token.isValid().toString();
+      payload.contentEditable = (token.isValid() && token.canRead()).toString();
 
       if (token.isValid()) {
         document.getElementById("payload")?.addEventListener('input',
@@ -713,7 +736,7 @@ export class App {
     // Check if payload is valid
     try {
       const obj = JSON.parse(part);
-      const jwt = token.getJWT(token.token);
+      const jwt = token.getJWT();
       setter(jwt, obj);
 
       document.getElementById("claimsTable").innerHTML = this._displayClaimsTable(jwt);
@@ -780,7 +803,7 @@ export class App {
     return `<div class="w3-container">
       <i class="w3-margin-right fa fa-id-card-o"></i><span class="w3-opacity w3-large">${token.dirtyTitle()}</span>
       <h6 class="w3-opacity"><i class="fa fa-clock-o "></i> ${Utils.displayDateMenu(token.saved)}</h6>
-      <p>${this._displayColorCodedToken(this._truncate(token.token.raw))}</p>
+      <p>${this._displayColorCodedToken(this._truncate(token.token.raw), "rawTokenMenu")}</p>
     </div>`; 
   }
   
@@ -927,8 +950,12 @@ export class App {
 
     const jweHeaderValue = document.getElementById("jweHeaderValue");
     if (token.encrypted) {
-      const jwe = token.token as JWEToken;
-      jweHeaderValue.innerHTML = Utils.formatJson(jwe.header);
+      if (token.isValid()) {
+        const jwe = token.token as JWEToken;
+        jweHeaderValue.innerHTML = Utils.formatJson(jwe.header);
+      } else {
+        jweHeaderValue.innerHTML = "Invalid header";
+      }
     } else {
       jweHeaderValue.innerHTML = "";
     }
@@ -1017,13 +1044,17 @@ export class App {
     this._enableKeyButtons(key);
   }
 
-  private _displayColorCodedToken(rawToken: string): string {
+  private _displayColorCodedToken(rawToken: string, idPrefix: string): string {
     const segments = rawToken.split(".");
     let coloredstring = "";
+    let n = 0;
     for (let i = 0; i < segments.length; i++) {
-      coloredstring += `<span class='${App.tokenColors[i]}'>${segments[i]}</span>.`;
+      coloredstring += `<span class="${App.tokenColors[i]}" id="${idPrefix}${n++}">${segments[i]}</span>`;
+      if (i < segments.length - 1) {
+        coloredstring += `<span id="${idPrefix}${n++}">.</span>`;
+      }
     }
-    return coloredstring.slice(0, -1);
+    return coloredstring;
   }
 
   private _getNewTokenId(): string {
@@ -1103,7 +1134,7 @@ export class App {
       settings.verificationResult = "Unable to verify - token invalid";
       settings.algorithm = null;
     } else {
-      const jwt = token.getJWT(token.token); 
+      const jwt = token.getJWT(); 
       
       if (!!!jwt) {
         settings.verificationResult = "Unable to verify - token encrypted";
@@ -1142,7 +1173,7 @@ export class App {
 
   private async _generate(token: TokenModel) {
     try {
-      const jwt = token.getJWT(token.token);
+      const jwt = token.getJWT();
 
       const settings = token.verifySettings;
       const privateKey = this._getGenerateKey(settings);
@@ -1184,7 +1215,7 @@ export class App {
 
   private async _encrypt(token: TokenModel) {
     try {
-      const jwt = token.getJWT(token.token);
+      const jwt = token.getJWT();
       const settings = token.decryptSettings;
 
       const jwe = await jwt.encrypt(settings.key.publicKey, settings.algorithm);
@@ -1195,6 +1226,6 @@ export class App {
   }
 
   private _decryptIfNeeded(token: TokenModel): Promise<void> {
-    return token.encrypted ? this._decrypt(token) : Promise.resolve();
+    return (token.isValid() && token.encrypted) ? this._decrypt(token) : Promise.resolve();
   }
 }

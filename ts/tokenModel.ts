@@ -9,7 +9,6 @@ export class TokenModel {
 
   public token: Token;
   public tokenParseError: string;
-  public lastValid: Token;
   
   public encrypted: boolean;
   
@@ -44,7 +43,6 @@ export class TokenModel {
         try {
           const jwt = new JWT(rawToken);
           this.token = jwt;
-          this.lastValid = jwt;
           this.tokenParseError = null;
         } catch (e) {
           this.token = new Token(rawToken);
@@ -55,13 +53,13 @@ export class TokenModel {
         try {
           const jwe = new JWEToken(rawToken);
           this.token = jwe;
-          this.lastValid = jwe;
           this.tokenParseError = null;
         } catch (e) {
           this.token = new Token(rawToken);
           this.tokenParseError = e.message;
         }
       } else {
+        this.token = new Token(rawToken);
         this.encrypted = null;
         this.tokenParseError = "Invalid token - JWTs have 3 or 5 parts separated by '.'";
       }
@@ -73,7 +71,6 @@ export class TokenModel {
 
   public setJWE(jwe: JWEToken) {
     this.token = jwe;
-    this.lastValid = jwe;
     this.tokenParseError = null;
     this.encrypted = !!jwe.decrypted;
   }
@@ -105,12 +102,12 @@ export class TokenModel {
     return this.title + (this.isDirty() ? "*" : "");
   }
 
-  public getJWT(token: Token): JWT {
+  public getJWT(): JWT {
     if (!this.encrypted) {
-      return token as JWT;
+      return this.token as JWT;
     } else {
       if (this.decryptSettings.decryptionResult === true) {
-        return (token as JWEToken).decrypted;
+        return (this.token as JWEToken).decrypted;
       } else {
         return null;
       }
