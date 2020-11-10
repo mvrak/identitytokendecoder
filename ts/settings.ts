@@ -27,20 +27,56 @@ export class VerifySettings {
   public validTime: number;
   public validTimeUnit: TimeUnit;
 
+  // Original values
+  private _originalKey: Key;
+  private _originalAutoSelect: boolean;
+  private _originalAddExpiry: boolean;
+  private _originalValidTime: number;
+  private _originalValidTimeUnit: TimeUnit;
+
   // Result
   public verificationResult: boolean | string;
 
-  constructor() {
-    this.key = null;
-    this.algorithm = SigningAlgorithm.HS256;
+  constructor(key?: Key, algorithm?: SigningAlgorithm, autoSelect?: boolean, addExpiry?: boolean, validTime?: number, validTimeUnit?: TimeUnit) {
+    this.key = key ?? null;
+    this.algorithm = algorithm ?? SigningAlgorithm.HS256;
 
-    this.autoSelect = true;
+    this.autoSelect = autoSelect ?? true;
 
-    this.addExpiry = false;
-    this.validTime = 300;
-    this.validTimeUnit = TimeUnit.Second;
+    this.addExpiry = addExpiry ?? false;
+    this.validTime = validTime ?? 300;
+    this.validTimeUnit = validTimeUnit ?? TimeUnit.Second;
 
     this.verificationResult = null;
+
+    this.save();
+  }
+
+  public isDirty(): boolean {
+    return (this.autoSelect !== this._originalAutoSelect) ||
+      (!this.autoSelect && !this._originalAutoSelect && this.key !== this._originalKey) ||
+      (this.addExpiry !== this._originalAddExpiry) || (this.validTime !== this._originalValidTime) ||
+      (this.validTimeUnit !== this._originalValidTimeUnit);
+  }
+
+  public save() {
+    this._originalKey = this.key;
+    this._originalAutoSelect = this.autoSelect;
+    this._originalAddExpiry = this.addExpiry;
+    this._originalValidTime = this.validTime;
+    this._originalValidTimeUnit = this.validTimeUnit;
+  }
+
+  public discard() {
+    this.key = this._originalKey;
+    this.autoSelect = this._originalAutoSelect;
+    this.addExpiry = this._originalAddExpiry;
+    this.validTime = this._originalValidTime;
+    this.validTimeUnit = this._originalValidTimeUnit;
+  }
+
+  public setAlg(algorithm: SigningAlgorithm) {
+    this.algorithm = algorithm;
   }
 }
 
@@ -55,13 +91,38 @@ export class DecryptSettings {
   // Result
   public decryptionResult: boolean | string;
 
-  constructor() {
-    this.key = null;
-    this.algorithm = EncryptionAlgorithm.A128CBCN;
+  // Original values
+  private _originalKey: Key;
+  private _originalAutoSelect: boolean;
 
-    this.autoSelect = true;
+  constructor(key?: Key, algorithm?: EncryptionAlgorithm, autoSelect?: boolean) {
+    this.key = key ?? null;
+    this.algorithm = algorithm ?? EncryptionAlgorithm.A128CBCN;
+
+    this.autoSelect = autoSelect ?? true;
 
     this.decryptionResult = null;
+
+    this.save();
+  }
+
+  public isDirty(): boolean {
+    return (this.autoSelect !== this._originalAutoSelect) ||
+      (!this.autoSelect && !this._originalAutoSelect && this.key !== this._originalKey);
+  }
+
+  public save() {
+    this._originalKey = this.key;
+    this._originalAutoSelect = this.autoSelect;
+  }
+
+  public discard() {
+    this.key = this._originalKey;
+    this.autoSelect = this._originalAutoSelect;
+  }
+
+  public setAlg(algorithm: EncryptionAlgorithm) {
+    this.algorithm = algorithm;
   }
 }
 

@@ -71,10 +71,10 @@ export class App {
 
     document.getElementById("tokensDisplay").style.display = "block";
     document.getElementById("keysDisplay").style.display = "none";
+    document.getElementById("tokenLastSaved").innerHTML = Utils.displayDate(token.saved);
     
     this._renderTokenTitle(token);
     this._renderRawToken(token);
-    document.getElementById("tokenLastSaved").innerHTML = Utils.displayDate(token.saved);
     
     this._clearTokenDetails();
     this._enableTokenButtons(token);
@@ -141,11 +141,9 @@ export class App {
     const token = this._current as TokenModel;
     token.setToken(tokenString);
 
-    this._renderTokenTitle(token);
     this._renderRawToken(token, true);
-    this._reRenderToken(token);
-    this._enableTokenButtons(token);
-    
+    this._onDirtyChange(token);
+
     this._decryptIfNeeded(token).then(() => {
       this._renderTokenDetails(token);
       return this._verify(token);
@@ -199,7 +197,7 @@ export class App {
     this._store.saveToken(token);
     document.getElementById("tokenLastSaved").innerHTML = Utils.displayDate(token.saved);
 
-    this._onSaveDiscardToken(token);
+    this._onDirtyChange(token);
   }
   
   private _onTokenDiscard() {
@@ -207,7 +205,7 @@ export class App {
     token.discard();
 
     this._renderRawToken(token);
-    this._onSaveDiscardToken(token);
+    this._onDirtyChange(token);
     
     this._decryptIfNeeded(token).then(() => {
       this._renderTokenDetails(token);
@@ -294,6 +292,8 @@ export class App {
     
     token.verifySettings.key = this._keys.find((key) => key.id === keySelect.value);
 
+    this._onDirtyChange(token);
+
     if (token.canRead()) {
       this._verify(token)
         .then(() => {
@@ -308,6 +308,8 @@ export class App {
     const keySelect = document.getElementById(id) as HTMLInputElement;
 
     token.decryptSettings.key = this._keys.find((key) => key.id === keySelect.value);
+
+    this._onDirtyChange(token);
 
     if (token.encrypted) {
       this._decrypt(token).then(() => this._verify(token)).then(() => {
@@ -330,6 +332,8 @@ export class App {
 
     token.verifySettings.autoSelect = autoSelect.checked;
 
+    this._onDirtyChange(token);
+
     this._verify(token).then(() => {
       this._renderTabs(token);
     });
@@ -341,6 +345,8 @@ export class App {
     const autoSelect = document.getElementById("autoSelectDecrypt") as HTMLInputElement;
 
     token.decryptSettings.autoSelect = autoSelect.checked;
+
+    this._onDirtyChange(token);
 
     if (token.encrypted) {
       this._decrypt(token).then(() => this._verify(token)).then(() => {
@@ -385,6 +391,8 @@ export class App {
     const addExpiry = document.getElementById("addExpiry") as HTMLInputElement;
     settings.addExpiry = addExpiry.checked;
 
+    this._onDirtyChange(token);
+
     this._renderGenerateTab(token);
   }
 
@@ -395,6 +403,8 @@ export class App {
     const validTime = document.getElementById("validTime") as HTMLInputElement;
     settings.validTime = parseFloat(validTime.value);
 
+    this._onDirtyChange(token);
+
     this._renderGenerateTab(token);
   }
 
@@ -404,6 +414,8 @@ export class App {
 
     const validTimeUnit = document.getElementById("validTimeUnit") as HTMLInputElement;
     settings.validTimeUnit = validTimeUnit.value as TimeUnit;
+
+    this._onDirtyChange(token);
 
     this._renderGenerateTab(token);
   }
@@ -419,14 +431,14 @@ export class App {
       const jwt = token.getJWT();
       jwt.setAlg(settings.algorithm);
       this._renderRawToken(token);
-      this._renderTokenTitle(token);
-      this._reRenderToken(token);
-      this._enableTokenButtons(token);
+      this._onDirtyChange(token);
 
       this._renderTokenDetails(token);
       this._verify(token).then(() => {
         this._renderTabs(token);
       });
+    } else {
+      this._onDirtyChange(token);
     }
   }
 
@@ -436,6 +448,8 @@ export class App {
 
     const encryptAlgorithm = document.getElementById("encryptAlgorithm") as HTMLInputElement;
     settings.algorithm = encryptAlgorithm.value as EncryptionAlgorithm;
+
+    this._onDirtyChange(token);
   }
 
   private async _onCopy() {
@@ -449,9 +463,7 @@ export class App {
 
     this._generate(token).then(() => {
       this._renderRawToken(token);
-      this._renderTokenTitle(token);
-      this._reRenderToken(token);
-      this._enableTokenButtons(token);
+      this._onDirtyChange(token);
 
       this._renderTokenDetails(token);
       return this._verify(token);
@@ -467,12 +479,10 @@ export class App {
 
     token.setToken(jwe.decrypted.raw);
 
-    this._reRenderToken(token);
-    this._renderTokenTitle(token);
     this._renderRawToken(token);
     this._renderTokenDetails(token);
     this._renderTabs(token);
-    this._enableTokenButtons(token);
+    this._onDirtyChange(token);
   }
 
   private async _onEncrypt() {
@@ -480,11 +490,9 @@ export class App {
 
     this._generate(token).then(() => this._encrypt(token)).then(() => {
       this._renderRawToken(token);
-      this._reRenderToken(token);
-      this._renderTokenTitle(token);
       this._renderTokenDetails(token);
       this._renderTabs(token);
-      this._enableTokenButtons(token);
+      this._onDirtyChange(token);
     });
   }
 
@@ -654,20 +662,15 @@ export class App {
   private _renderRawToken(token: TokenModel, setCursor?: true) {
     const rawToken = document.getElementById("rawToken");
     const newInnerHTML = this._displayColorCodedToken(token.token.raw, "rawTokenBox");
-    if (rawToken.innerHTML !== newInnerHTML) {
-      let selection: Selection;
-      let anchorId: string;
-      let cursor: number;
-      if (setCursor) {
-        selection = window.getSelection();
-        anchorId = selection.anchorNode.parentElement.id;
-        cursor = selection.anchorOffset;
+    if (setCursor) {
+      if (rawToken.innerHTML !== newInnerHTML) {
+        const selection = window.getSelection();
+        let cursor = selection.anchorOffset;
+        let anchorId = selection.anchorNode.parentElement.id;
         if (!anchorId) {
           anchorId = "rawTokenBox0";
         }
-      }
-      rawToken.innerHTML = newInnerHTML;
-      if (setCursor) {
+        rawToken.innerHTML = newInnerHTML;
         let anchor: Element = document.getElementById(anchorId);
         while (cursor > anchor?.textContent.length) {
           cursor -= anchor.textContent.length;
@@ -682,6 +685,8 @@ export class App {
           selection.addRange(range);
         }
       }
+    } else {
+      rawToken.innerHTML = newInnerHTML;
     }
   }
 
@@ -712,7 +717,7 @@ export class App {
 
     const header = document.getElementById("header");
     if (!!header) {
-      header.contentEditable = (token.isValid() && token.canRead()).toString();
+      header.contentEditable = (token.isValid() && !token.encrypted).toString();
 
       if (token.isValid()) {
         document.getElementById("header")?.addEventListener('input',
@@ -722,7 +727,7 @@ export class App {
 
     const payload = document.getElementById("payload");
     if (!!payload) {
-      payload.contentEditable = (token.isValid() && token.canRead()).toString();
+      payload.contentEditable = (token.isValid() && !token.encrypted).toString();
 
       if (token.isValid()) {
         document.getElementById("payload")?.addEventListener('input',
@@ -741,8 +746,7 @@ export class App {
 
       document.getElementById("claimsTable").innerHTML = this._displayClaimsTable(jwt);
       this._renderRawToken(token);
-      this._renderTokenTitle(token);
-      this._reRenderToken(token);
+      this._onDirtyChange(token);
       this._verify(token).then(() => {
         this._renderTabs(token);
       });
@@ -934,7 +938,7 @@ export class App {
     validTimeUnit.value = settings.validTimeUnit;
     validTimeUnit.disabled = !settings.addExpiry;
 
-    this._enableButton("generateBtn", !!privateKey && token.isValid() && token.canRead());
+    this._enableButton("generateBtn", !!privateKey && token.isValid() && !token.encrypted);
   }
   
   private _renderDecryptTab(token: TokenModel) {
@@ -1032,12 +1036,6 @@ export class App {
     }
   }
 
-  private _onSaveDiscardToken(token: TokenModel) {
-    this._renderTokenTitle(token);
-    this._reRenderToken(token);
-    this._enableTokenButtons(token);
-  }
-
   private _onSaveDiscardKey(key: Key) {
     this._renderKeyTitle(key);
     this._reRenderKey(key);
@@ -1105,6 +1103,12 @@ export class App {
     } else if (x.className.indexOf("w3-disabled") === -1) { 
       x.className += " w3-disabled";
     }
+  }
+
+  private _onDirtyChange(token: TokenModel) {
+    this._renderTokenTitle(token);
+    this._reRenderToken(token);
+    this._enableTokenButtons(token);
   }
 
   private _populateSelect() {

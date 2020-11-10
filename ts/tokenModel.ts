@@ -80,7 +80,7 @@ export class TokenModel {
   }
 
   public isDirty(): boolean {
-    return !!!this.saved || this.title !== this._originalTitle || this.token.raw !== this._originalToken;
+    return !!!this.saved || this.title !== this._originalTitle || this.token.raw !== this._originalToken || this.verifySettings.isDirty() || this.decryptSettings.isDirty();
   }
 
   public canRead(): boolean {
@@ -91,11 +91,15 @@ export class TokenModel {
     this.saved = new Date();
     this._originalToken = this.token.raw;
     this._originalTitle = this.title;
+    this.verifySettings.save();
+    this.decryptSettings.save();
   }
 
   public discard() {
     this.setToken(this._originalToken ?? "");
     this.title = this._originalTitle;
+    this.verifySettings.discard();
+    this.decryptSettings.discard();
   }
 
   public dirtyTitle(): string {
