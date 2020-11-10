@@ -1,5 +1,3 @@
-import { Token } from "./token";
-
 export class Key {
   public id: string;
   public title: string;
