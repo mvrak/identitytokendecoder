@@ -78,21 +78,16 @@ export class Store {
     this._storage = window.localStorage;
 
     let tokens = this._storage.getItem(Store.LocalStorageTokensKey);
-
-    if (!!!tokens) {
-      this._tokens = Store.SampleTokens
-      this._storage.setItem(Store.LocalStorageTokensKey, JSON.stringify(Store.SampleTokens));
-    } else {
-      this._tokens = <StoredToken[]>JSON.parse(tokens);
-    }
-    
     let keys = this._storage.getItem(Store.LocalStorageKeysKey);
 
-    if (!!!keys) {
+    if (!!!tokens && !!!keys) {
+      this._tokens = Store.SampleTokens
+      this._storage.setItem(Store.LocalStorageTokensKey, JSON.stringify(Store.SampleTokens));
       this._keys = Store.SampleKeys
       this._storage.setItem(Store.LocalStorageKeysKey, JSON.stringify(Store.SampleKeys));
     } else {
-      this._keys = <StoredKey[]>JSON.parse(keys);
+      this._tokens = !!tokens ? <StoredToken[]>JSON.parse(tokens) : [];
+      this._keys = !!keys ? <StoredKey[]>JSON.parse(keys) : [];
     }
   }
 
