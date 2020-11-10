@@ -20,15 +20,15 @@ export class TokenModel {
   private _originalToken: string;
   private _originalTitle: string;
 
-  constructor(id: string, title: string, saved?: Date, rawToken?: string) {
+  constructor(id: string, title: string, saved?: Date, rawToken?: string, verifySettings?: VerifySettings, decryptSettings?: DecryptSettings) {
     this.id = id;
     this.title = title;
     this.saved = saved;
     
     this.setToken(rawToken ?? "");
     
-    this.verifySettings = new VerifySettings();
-    this.decryptSettings = new DecryptSettings();
+    this.verifySettings = verifySettings ?? new VerifySettings();
+    this.decryptSettings = decryptSettings ?? new DecryptSettings();
     
     this._originalToken = rawToken;
     this._originalTitle = title ?? "";

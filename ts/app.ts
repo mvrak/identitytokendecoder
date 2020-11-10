@@ -37,18 +37,7 @@ export class App {
     this._store = new Store();
     this._keyFetch = new KeyFetch();
 
-    // TODO: Do token retrieval from local storage
-    // const storedValues = this._storage.retrieveAll();
-    // [this._tokens, this._keys] = storedValues[0];
-
-    this._tokens = [
-      new TokenModel("token1", "Sample Token", new Date("1 November, 2020"), "eyJ0eXAiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIiwiYWxnIjoiQTI1NktXIiwia2lkIjoieFYtVVQ2SVl0THdwZmY3U1lRVUgyUGdiQl9kS21uZGVqeUZwSmM1Ni1FYyJ9.OCmqxfr3sIJ0hWstMMRJXe2StDBGmAuCgZDfgL_jfTXLpp4rsB-hHw.UaTzj5hEfvuqOSgo.s-8T703SvsBfVOI0ntoJuFStoAPT5W1isWR6US49QWSIPvGvLi3SBPrsfhbHDvfMYiVpz_jv0L44UyjL72xKnrhkpzrqfO_ITFxbbNAWmo7D_sjENbkLsjfd9ThfXqDqp1yQRaoIKl-DsZ3p4Qi1PLd57G2gJpmsJzIuIwu-gKe-E4OLMSZa8r_1iGpuSVeMfA2iP_gl0vNnAOY.OjMS82VFUI2gGRi1e5HWaw"),
-      new TokenModel("token2", "Sample Token 2", new Date("1 November, 2020"), "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI")
-    ];
-    
-    this._keys = [
-      new Key("key1", "Sample Key", new Date("1 November, 2020"), "vFfSurgM7hZIkirsjn8IFhJ3optS_GCecC-_qGfhMRQ","vFfSurgM7hZIkirsjn8IFhJ3optS_GCecC-_qGfhMRQ")
-    ];
+    [this._tokens, this._keys] = this._store.retrieveAll();
 
     this._settingsTab = SettingsTab.Verify;
 
@@ -228,6 +217,8 @@ export class App {
     } else {
       this._newToken();
     }
+
+    this._store.deleteToken(token);
   }
 
   private _onKeySave() {
@@ -278,6 +269,8 @@ export class App {
     } else {
       this._displayToken(this._tokens[0]);
     }
+
+    this._store.deleteKey(key);
   }
 
   // private _onKeyFetch() {

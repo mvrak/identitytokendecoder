@@ -37,9 +37,9 @@ export class VerifySettings {
   // Result
   public verificationResult: boolean | string;
 
-  constructor(key?: Key, algorithm?: SigningAlgorithm, autoSelect?: boolean, addExpiry?: boolean, validTime?: number, validTimeUnit?: TimeUnit) {
+  constructor(key?: Key, autoSelect?: boolean, addExpiry?: boolean, validTime?: number, validTimeUnit?: TimeUnit) {
     this.key = key ?? null;
-    this.algorithm = algorithm ?? SigningAlgorithm.HS256;
+    this.algorithm = SigningAlgorithm.HS256;
 
     this.autoSelect = autoSelect ?? true;
 
@@ -95,9 +95,9 @@ export class DecryptSettings {
   private _originalKey: Key;
   private _originalAutoSelect: boolean;
 
-  constructor(key?: Key, algorithm?: EncryptionAlgorithm, autoSelect?: boolean) {
+  constructor(key?: Key, autoSelect?: boolean) {
     this.key = key ?? null;
-    this.algorithm = algorithm ?? EncryptionAlgorithm.A128CBCN;
+    this.algorithm = EncryptionAlgorithm.A128CBCN;
 
     this.autoSelect = autoSelect ?? true;
 
